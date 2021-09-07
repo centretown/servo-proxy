@@ -24,37 +24,46 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
+#include <ServoEasing.h>
 
-// Depending on your servo make, the pulse width min and max may vary, you
-// want these to be as small/large as possible without hitting the hard stop
-// for max range. You'll have to tweak them as necessary to match the servos you
-// have!
-#define SERVOMIN 150  // This is the 'minimum' pulse length count (out of 4096)
-#define SERVOMAX 600  // This is the 'maximum' pulse length count (out of 4096)
-#define USMIN 600     // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
-#define USMAX 2400    // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
-#define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
+#define PAN 0
+#define TILT 1
+
+#define ERR_TOO_SHORT 1
+#define ERR_NO_EQUAL 2
+#define ERR_NOT_ENOUGH_ARGS 3
+#define ERR_COMMAND_NOT_FOUND 4
+#define ERR_OK 0
+
+typedef struct
+{
+    uint8_t angle = 0;
+    uint8_t speed = 45;
+    uint8_t fresh = 0;
+} servo_cmd_t;
 
 class ServoServe
 {
 private:
-    Adafruit_PWMServoDriver &pwm;
-    const uint8_t pwmAddress;
-    uint8_t servoCount;
-    // our servo # counter
-    uint8_t servoNum = 0;
+    ServoEasing **servos;
+    servo_cmd_t commands[16];
+    const int8_t *expanderPins;
+    const size_t count;
+    void attach(ServoEasing *servo, int expanderPin);
+    bool ready = false;
 
 public:
-    ServoServe(Adafruit_PWMServoDriver &pwm,
-               uint8_t pwmAddress, 
-               uint8_t servoCount) : pwm(pwm), pwmAddress(pwmAddress), servoCount(servoCount) {}
+    ServoServe(
+        ServoEasing **servos,
+        int8_t *expanderPins,
+        size_t count) : servos(servos),
+                        expanderPins(expanderPins),
+                        count(count) {}
+
     ~ServoServe() {}
 
-    int setup();
-    int start();
-    void setServoPulse(uint8_t n, double pulse);
-    void loopServo(int count = 2);
-    void microTest(int count);
-    void pulseTest(int count);
-    void wave(int count);
+    void setup();
+    void loop();
+    void start();
+    int process(const char *buf);
 };

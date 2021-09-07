@@ -1,143 +1,142 @@
 // Copyright (c) 2021 Dave Marsh. See LICENSE.
 
-/*************************************************** 
-  This is an example for our Adafruit 16-channel PWM & Servo driver
-  Servo test - this will drive 8 servos, one after the other on the
-  first 8 pins of the PCA9685
-
-  Pick one up today in the adafruit shop!
-  ------> http://www.adafruit.com/products/815
-  
-  These drivers use I2C to communicate, 2 pins are required to  
-  interface.
-
-  Adafruit invests time and resources providing this open source code, 
-  please support Adafruit and open-source hardware by purchasing 
-  products from Adafruit!
-
-  Written by Limor Fried/Ladyada for Adafruit Industries.  
-  BSD license, all text above must be included in any redistribution
- ****************************************************/
-
 #include "ServoServe.h"
 
-int ServoServe::setup()
+// const int ServoServe::types[] = {EASE_LINEAR, EASE_QUADRATIC_IN_OUT, EASE_CUBIC_IN_OUT, EASE_QUARTIC_IN_OUT};
+
+void ServoServe::attach(ServoEasing *servo, int expanderPin)
 {
-    // Serial.println("pwm.begin();");
-    pwm.begin();
+    Serial.print(F("Attach servo to PCA9685 expander port "));
+    Serial.println(expanderPin);
     /*
-   * In theory the internal oscillator (clock) is 25MHz but it really isn't
-   * that precise. You can 'calibrate' this by tweaking this number until
-   * you get the PWM update frequency you're expecting!
-   * The int.osc. for the PCA9685 chip is a range between about 23-27MHz and
-   * is used for calculating things like writeMicroseconds()
-   * Analog servos run at ~50 Hz updates, It is importaint to use an
-   * oscilloscope in setting the int.osc frequency for the I2C PCA9685 chip.
-   * 1) Attach the oscilloscope to one of the PWM signal pins and ground on
-   *    the I2C PCA9685 chip you are setting the value for.
-   * 2) Adjust setOscillatorFrequency() until the PWM update frequency is the
-   *    expected value (50Hz for most ESCs)
-   * Setting the value here is specific to each individual I2C PCA9685 chip and
-   * affects the calculations for the PWM update frequency. 
-   * Failure to correctly set the int.osc value will cause unexpected PWM results
-   */
-    // Serial.println("pwm.setOscillatorFrequency(27000000);");
-    pwm.setOscillatorFrequency(25000000);
-    // Serial.println("pwm.setPWMFreq(SERVO_FREQ);");
-    pwm.setPWMFreq(SERVO_FREQ); // Analog servos run at ~50 Hz updates
-    delay(10);
-    return 0;
-}
-
-int ServoServe::start()
-{
-    loopServo();
-    // wave(10);
-
-    return 0;
-}
-
-// You can use this function if you'd like to set the pulse length in seconds
-// e.g. setServoPulse(0, 0.001) is a ~1 millisecond pulse width. It's not precise!
-void ServoServe::setServoPulse(uint8_t n, double pulse)
-{
-    double pulselength;
-
-    pulselength = 1000000;     // 1,000,000 us per second
-    pulselength /= SERVO_FREQ; // Analog servos run at ~60 Hz updates
-    // Serial.print(pulselength);
-    // Serial.println(" us per period");
-    pulselength /= 4096; // 12 bits of resolution
-    // Serial.print(pulselength);
-    // Serial.println(" us per bit");
-    pulse *= 1000000; // convert input seconds to us
-    pulse /= pulselength;
-    // Serial.println(pulse);
-    pwm.setPWM(n, 0, pulse);
-}
-
-void ServoServe::loopServo(int count)
-{
-    pulseTest(count);
-    microTest(count);
-    return;
-}
-
-void ServoServe::pulseTest(int count)
-{
-    // Drive each servo one at a time using setPWM()
-    // Serial.println(servoNum);
-    for (int i = 0; i < count; i++)
+     * Check at least the last call to attach()
+     */
+    if (servo->attach(expanderPin) == INVALID_SERVO)
     {
-        for (servoNum = 0; servoNum < servoCount; servoNum++)
+        Serial.println(F("Error attaching servo - maybe MAX_EASING_SERVOS=" STR(MAX_EASING_SERVOS) " is to small to hold all servos"));
+        while (true)
         {
-            for (uint16_t pulselen = SERVOMIN; pulselen < SERVOMAX; pulselen++)
-            {
-                pwm.setPWM(servoNum, 0, pulselen);
-            }
-            delay(500);
-            for (uint16_t pulselen = SERVOMAX; pulselen > SERVOMIN; pulselen--)
-            {
-                pwm.setPWM(servoNum, 0, pulselen);
-            }
-            delay(500);
+            digitalWrite(LED_BUILTIN, HIGH);
+            delay(100);
+            digitalWrite(LED_BUILTIN, LOW);
+            delay(100);
         }
     }
 }
 
-void ServoServe::microTest(int count)
+// NOTE:
+// void ServoEasing::registerUserEaseInFunction(float (*aUserEaseInFunction)(float aPercentageOfCompletion)) {
+
+void ServoServe::setup()
 {
-    // Drive each servo one at a time using writeMicroseconds(), it's not precise due to calculation rounding!
-    // The writeMicroseconds() function is used to mimic the Arduino Servo library writeMicroseconds() behavior.
-    for (int i = 0; i < count; i++)
+    /*
+     * Check if I2C communication is possible. If not, we will wait forever at endTransmission.
+     */
+    // Initialize wire before checkI2CConnection()
+    Wire.begin(); // Starts with 100 kHz. Clock will eventually be increased at first attach() except for ESP32.
+    Serial.println(F("Try to communicate with PCA9685 Expander by TWI / I2C"));
+    Serial.flush();
+    Wire.beginTransmission(PCA9685_DEFAULT_ADDRESS);
+    uint8_t tWireReturnCode = Wire.endTransmission(true);
+    if (tWireReturnCode == 0)
     {
-        for (servoNum = 0; servoNum < servoCount; servoNum++)
-        {
-            for (uint16_t microsec = USMIN; microsec < USMAX; microsec++)
-            {
-                pwm.writeMicroseconds(servoNum, microsec);
-            }
-            delay(500);
-            for (uint16_t microsec = USMAX; microsec > USMIN; microsec--)
-            {
-                pwm.writeMicroseconds(servoNum, microsec);
-            }
-            delay(500);
-        }
+        Serial.print(F("Found"));
     }
+    else
+    {
+        Serial.print(F("Error code="));
+        Serial.print(tWireReturnCode);
+        Serial.print(F(". Communication with I2C was successful, but found no"));
+    }
+    Serial.print(F(" I2C device attached at address: 0x"));
+    Serial.println(PCA9685_DEFAULT_ADDRESS, HEX);
+
+    for (size_t i = 0; i < count; i++)
+    {
+        attach(servos[i], expanderPins[i]);
+    }
+
+    /**************************************************
+     * Set servos to start position.
+     * This is the position where the movement starts.
+     *************************************************/
+    for (size_t i = 0; i < count; i++)
+    {
+        servos[i]->write(0);
+    }
+
+    // Wait for servos to reach start position.
+    delay(500);
 }
 
-void ServoServe::wave(int count)
+int ServoServe::process(const char *buf)
 {
-    for (int i = 0; i < count; i++)
+    size_t len = strlen(buf);
+    if (len < 1)
     {
-        // Drive each PWM in a 'wave'
-        for (uint16_t i = 0; i < 4096; i += 8)
+        return ERR_OK;
+    }
+
+    if (buf[0] != '?')
+    {
+        Serial.println(buf);
+        return ERR_OK;
+    }
+
+    if (len < 5)
+    {
+        return ERR_TOO_SHORT;
+    }
+
+    char buffer[16] = {0};
+    int angle = 0;
+    char *eq = strchr(buf, '=');
+    if (eq == NULL)
+    {
+        return ERR_NO_EQUAL;
+    }
+    *eq = ' ';
+    int nitems = sscanf(buf + 1, "%s %d", buffer, &angle);
+    if (nitems != 2)
+    {
+        return ERR_NOT_ENOUGH_ARGS;
+    }
+
+    int8_t id = PAN;
+    if (!strcmp("pan", buffer))
+    {
+        id = PAN;
+    }
+    else if (!strcmp("tilt", buffer))
+    {
+        id = TILT;
+    }
+    else
+    {
+        return ERR_COMMAND_NOT_FOUND;
+    }
+
+    commands[id].angle = angle;
+    commands[id].speed = 45;
+    commands[id].fresh = 1;
+    return ERR_OK;
+}
+
+void ServoServe::start()
+{
+}
+
+void ServoServe::loop()
+{
+    for (size_t i = 0; i < count; i++)
+    {
+        ServoEasing *ps = servos[i];
+        servo_cmd_t *cmd = &commands[i];
+        if (!ps->isMoving() && cmd->fresh)
         {
-            for (uint8_t pwmnum = 0; pwmnum < servoCount; pwmnum++)
-            {
-                pwm.setPWM(pwmnum, 0, (i + (4096 / 16) * pwmnum) % 4096);
-            }
+            cmd->fresh = 0;
+            ps->startEaseTo(cmd->angle, cmd->speed);
+            return;
         }
     }
 }
