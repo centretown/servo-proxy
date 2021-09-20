@@ -6,14 +6,19 @@
 
 void ServoServe::attach(ServoEasing *servo, int expanderPin)
 {
+#if defined(USE_PCA9685_SERVO_EXPANDER)
     Serial.print(F("Attach servo to PCA9685 expander port "));
+#else
+    Serial.print(F("Attach servo to PIN "));
+#endif
     Serial.println(expanderPin);
-    /*
-     * Check at least the last call to attach()
-     */
-    if (servo->attach(expanderPin) == INVALID_SERVO)
+    uint8_t err = servo->attach(expanderPin);
+    if (err == INVALID_SERVO)
     {
-        Serial.println(F("Error attaching servo - maybe MAX_EASING_SERVOS=" STR(MAX_EASING_SERVOS) " is to small to hold all servos"));
+        Serial.print(F("Error : "));
+        Serial.println(err);
+        Serial.print(F("Attaching servo to pin/port: "));
+        Serial.println(expanderPin);
         while (true)
         {
             digitalWrite(LED_BUILTIN, HIGH);
@@ -29,11 +34,11 @@ void ServoServe::attach(ServoEasing *servo, int expanderPin)
 
 void ServoServe::setup()
 {
-    /*
-     * Check if I2C communication is possible. If not, we will wait forever at endTransmission.
-     */
+    // Wait forever at endTransmission if I2C communication not possible
     // Initialize wire before checkI2CConnection()
-    Wire.begin(); // Starts with 100 kHz. Clock will eventually be increased at first attach() except for ESP32.
+    // Start clock at 100 kHz and increase when attach()ed (ESP32 excepted)
+#if defined(USE_PCA9685_SERVO_EXPANDER)
+    Wire.begin();
     Serial.println(F("Try to communicate with PCA9685 Expander by TWI / I2C"));
     Serial.flush();
     Wire.beginTransmission(PCA9685_DEFAULT_ADDRESS);
@@ -50,80 +55,83 @@ void ServoServe::setup()
     }
     Serial.print(F(" I2C device attached at address: 0x"));
     Serial.println(PCA9685_DEFAULT_ADDRESS, HEX);
+#endif
 
     for (size_t i = 0; i < count; i++)
     {
         attach(servos[i], expanderPins[i]);
     }
 
-    /**************************************************
-     * Set servos to start position.
-     * This is the position where the movement starts.
-     *************************************************/
     for (size_t i = 0; i < count; i++)
     {
         servos[i]->write(0);
+        commands[i].command = SERVO_EASE;
+        commands[i].angle = 180;
+        commands[i].speed = 50;
+        commands[i].fresh = 1;
     }
 
-    // Wait for servos to reach start position.
+    // delay(500);
+
+    // test(180);
+}
+
+void ServoServe::test(int angle)
+{
+    for (size_t i = 0; i < count; i++)
+    {
+        servos[i]->startEaseTo(angle, 50);
+    }
     delay(500);
 }
 
-int ServoServe::process(const char *buf)
+void ServoServe::start()
 {
-    size_t len = strlen(buf);
+}
+
+// command format
+int ServoServe::process(const char *cmd)
+{
+    size_t len = strlen(cmd);
     if (len < 1)
     {
         return ERR_OK;
     }
 
-    if (buf[0] != '?')
+    if (cmd[0] != '?')
     {
-        Serial.println(buf);
+        Serial.println(cmd);
         return ERR_OK;
     }
 
-    if (len < 5)
-    {
-        return ERR_TOO_SHORT;
-    }
-
-    char buffer[16] = {0};
-    int angle = 0;
-    char *eq = strchr(buf, '=');
-    if (eq == NULL)
-    {
-        return ERR_NO_EQUAL;
-    }
-    *eq = ' ';
-    int nitems = sscanf(buf + 1, "%s %d", buffer, &angle);
-    if (nitems != 2)
+    int command, index, angle, speed, type = 0;
+    int nitems = sscanf(cmd + 1, "%d %d %d %d %d",
+                        &command, &index, &angle, &speed, &type);
+    if (nitems < 2)
     {
         return ERR_NOT_ENOUGH_ARGS;
     }
 
-    int8_t id = PAN;
-    if (!strcmp("pan", buffer))
+    if (command < SERVO_FIRST || command > SERVO_LAST)
     {
-        id = PAN;
-    }
-    else if (!strcmp("tilt", buffer))
-    {
-        id = TILT;
-    }
-    else
-    {
-        return ERR_COMMAND_NOT_FOUND;
+        return ERR_NOT_FOUND;
     }
 
-    commands[id].angle = angle;
-    commands[id].speed = 45;
-    commands[id].fresh = 1;
+    if (index < 0 || index >= count)
+    {
+        return ERR_INDEX;
+    }
+
+    if (angle < 0 || speed < 0)
+    {
+        return ERR_BAD_VALUE;
+    }
+
+    commands[index].command = command;
+    commands[index].angle = angle % 181;
+    commands[index].speed = speed % 256;
+    commands[index].fresh = 1;
     return ERR_OK;
-}
-
-void ServoServe::start()
-{
 }
 
 void ServoServe::loop()
@@ -135,7 +143,20 @@ void ServoServe::loop()
         if (!ps->isMoving() && cmd->fresh)
         {
             cmd->fresh = 0;
-            ps->startEaseTo(cmd->angle, cmd->speed);
+            switch (cmd->command)
+            {
+            case SERVO_HOME:
+                ps->write(0);
+                break;
+            case SERVO_MOVE:
+                ps->setEasingType(EASE_LINEAR);
+                ps->startEaseTo(cmd->angle, cmd->speed);
+                break;
+            case SERVO_EASE:
+                ps->setEasingType(EASE_QUADRATIC_IN_OUT);
+                ps->startEaseTo(cmd->angle, cmd->speed);
+                break;
+            }
             return;
         }
     }
