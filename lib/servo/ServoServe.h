@@ -9,7 +9,9 @@
 #define SERVO_HOME 1
 #define SERVO_MOVE 2
 #define SERVO_EASE 3
-#define SERVO_LAST 3
+#define SERVO_TEST 4
+#define SERVO_STOP 5
+#define SERVO_LAST 5
 
 #define ERR_OK 0
 #define ERR_NOT_ENOUGH_ARGS 1
@@ -35,6 +37,7 @@ private:
     const size_t count;
     void attach(ServoEasing *servo, int expanderPin);
     bool ready = false;
+    uint8_t testAngle = 0;
 
 public:
     ServoServe(

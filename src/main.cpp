@@ -46,14 +46,24 @@ ServoEasing Servo1;
 ServoEasing Servo2;
 ServoEasing Servo3;
 ServoEasing Servo4;
+ServoEasing Servo5;
+ServoEasing Servo6;
+ServoEasing Servo7;
+ServoEasing Servo8;
+ServoEasing Servo9;
 
 #endif
 
-ServoEasing *servos[] = {&Servo1, &Servo2, &Servo3, &Servo4};
+ServoEasing *servos[] = {&Servo1, &Servo2, &Servo3,
+                         &Servo4, &Servo5, &Servo6,
+                         &Servo7, &Servo8, &Servo9};
 ServoEasing **pServos = servos;
-int8_t expanderPins[] = {2, 3};
+
+// Only works on pin 2, 3, 5, 6, 7, 8, 44, 45 and 46 on Arduino Mega!
+int8_t expanderPins[] = {2, 3, 5, 6, 7, 8, 44, 45, 46};
 ServoServe servoServe(pServos, expanderPins, sizeof(expanderPins) / sizeof(expanderPins)[0]);
 char usrBuffer[81] = {0};
+char testBuffer[81] = {0};
 MicroTerm usrTerm(Serial, usrBuffer, sizeof(usrBuffer));
 CameraListener camTerm(Serial1);
 
@@ -80,6 +90,8 @@ void setup()
   Serial1.flush();
 }
 
+void processError(int err);
+
 void loop()
 {
   servoServe.loop();
@@ -89,7 +101,18 @@ void loop()
     const char *buf = usrTerm.get();
     if (buf != NULL)
     {
-      Serial1.println(buf);
+      if (buf[0] == '?')
+      {
+        strncpy(testBuffer, buf, sizeof(testBuffer));
+        usrTerm.print(F("testing: "));
+        usrTerm.println(testBuffer);
+        int err = servoServe.process(testBuffer);
+        processError(err);
+      }
+      else
+      {
+        Serial1.println(buf);
+      }
     }
   }
 
@@ -102,22 +125,33 @@ void loop()
     }
 
     char *camBuffer = camTerm.get();
-    switch (servoServe.process(camBuffer))
+    int err = servoServe.process(camBuffer);
+    processError(err);
+    if (err > 0)
     {
-    case ERR_NOT_ENOUGH_ARGS:
-      usrTerm.println(F("ERR_NOT_ENOUGH_ARGS"));
-      return;
-    case ERR_NOT_FOUND:
-      usrTerm.println(F("ERR_NOT_FOUND"));
-      return;
-    case ERR_INDEX:
-      usrTerm.println(F("ERR_INDEX"));
-      return;
-    case ERR_BAD_VALUE:
-      usrTerm.println(F("ERR_BAD_VALUE"));
       return;
     }
     usrTerm.println(camBuffer);
+    // usrTerm.prompt();
+    return;
+  }
+}
+
+void processError(int err)
+{
+  switch (err)
+  {
+  case ERR_NOT_ENOUGH_ARGS:
+    usrTerm.println(F("ERR_NOT_ENOUGH_ARGS"));
+    return;
+  case ERR_NOT_FOUND:
+    usrTerm.println(F("ERR_NOT_FOUND"));
+    return;
+  case ERR_INDEX:
+    usrTerm.println(F("ERR_INDEX"));
+    return;
+  case ERR_BAD_VALUE:
+    usrTerm.println(F("ERR_BAD_VALUE"));
     return;
   }
 }

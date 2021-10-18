@@ -19,6 +19,8 @@ void ServoServe::attach(ServoEasing *servo, int expanderPin)
         Serial.println(err);
         Serial.print(F("Attaching servo to pin/port: "));
         Serial.println(expanderPin);
+#if defined(USE_PCA9685_SERVO_EXPANDER)
+        // halt with fast blink when using expander
         while (true)
         {
             digitalWrite(LED_BUILTIN, HIGH);
@@ -26,6 +28,7 @@ void ServoServe::attach(ServoEasing *servo, int expanderPin)
             digitalWrite(LED_BUILTIN, LOW);
             delay(100);
         }
+#endif
     }
 }
 
@@ -64,14 +67,18 @@ void ServoServe::setup()
 
     for (size_t i = 0; i < count; i++)
     {
-        servos[i]->write(0);
         commands[i].command = SERVO_EASE;
-        commands[i].angle = 180;
-        commands[i].speed = 50;
+        commands[i].angle = 0;
+        commands[i].speed = 40;
         commands[i].fresh = 1;
     }
 
-    // delay(500);
+    delay(500);
+
+    for (size_t i = 0; i < count; i++)
+    {
+        commands[i].command = SERVO_HOME;
+    }
 
     // test(180);
 }
@@ -104,8 +111,8 @@ int ServoServe::process(const char *cmd)
         return ERR_OK;
     }
 
-    int command, index, angle, speed, type = 0;
-    int nitems = sscanf(cmd + 1, "%d %d %d %d %d",
+    unsigned command, index, angle, speed, type = 0;
+    int nitems = sscanf(cmd + 1, "%u %u %u %u %u",
                         &command, &index, &angle, &speed, &type);
     if (nitems < 2)
     {
@@ -117,19 +124,15 @@ int ServoServe::process(const char *cmd)
         return ERR_NOT_FOUND;
     }
 
-    if (index < 0 || index >= count)
+    if (index >= count)
     {
         return ERR_INDEX;
-    }
-
-    if (angle < 0 || speed < 0)
-    {
-        return ERR_BAD_VALUE;
     }
 
     commands[index].command = command;
     commands[index].angle = angle % 181;
     commands[index].speed = speed % 256;
+    commands[index].type = type;
     commands[index].fresh = 1;
     return ERR_OK;
 }
@@ -155,6 +158,14 @@ void ServoServe::loop()
             case SERVO_EASE:
                 ps->setEasingType(EASE_QUADRATIC_IN_OUT);
                 ps->startEaseTo(cmd->angle, cmd->speed);
+                break;
+            case SERVO_TEST:
+                ps->setEasingType(EASE_LINEAR);
+                testAngle = (testAngle == cmd->type) ? cmd->angle : cmd->type;
+                ps->startEaseTo(testAngle, cmd->speed);
+                cmd->fresh = 1;
+                break;
+            case SERVO_STOP:
                 break;
             }
             return;
