@@ -14,19 +14,19 @@ otherwise it is passed on to the second port
 
 ## Commands
 
-1. `HOME` *index*
+1. `HOME index`
 Home or zero the servo at *index*.
-2. `MOVE` *index* *angle* *speed*
+2. `MOVE index angle speed`
 Move the servo at *index* to *angle* at *speed*.
 The motion is linear.
-3. `EASE` *index* *angle* *speed* *type*
+3. `EASE index angle speed type`
 Ease the servo at *index* to *angle* at *speed*.
 The motion is determined by *type*.
-4. `TEST`  *index* *angle* *speed* *angle2*
+4. `TEST index angle speed angle`
 Test the servo at *index*  from *angle* to *angle2* at *speed*.
 The motion is determined by the previous `EASE` or `MOVE` command.
 The test command repeats until the servo at *index* receives another command.
-5. `STOP` *index*
+5. `STOP index`
 Do nothing to the servo at *index*.
 Used to stop repeating the a previous `TEST` command.
 
