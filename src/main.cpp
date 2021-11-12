@@ -9,7 +9,6 @@
 
 #include "CameraListener.h"
 
-#include <ServoEasing.h>
 #include "ServoServe.h"
 #include "LedStrip.h"
 
