@@ -2,10 +2,16 @@
 
 #include <Arduino.h>
 #include <MicroTerm.h>
+#include <Adafruit_NeoPixel.h>
+#ifdef __AVR__
+#include <avr/power.h>
+#endif
+
 #include "CameraListener.h"
 
 #include <ServoEasing.h>
 #include "ServoServe.h"
+#include "LedStrip.h"
 
 // for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
 #if !defined(LED_BUILTIN) && !defined(ESP32)
@@ -15,6 +21,8 @@
 #if defined(ARDUINO_ARCH_SAMD)
 #define Serial SerialUSB
 #endif
+
+#define LEDSTRIP_PIN 12
 
 // only interrupt change pins on nano
 // #define SOFT_RX 2
@@ -67,6 +75,14 @@ char testBuffer[81] = {0};
 MicroTerm usrTerm(Serial, usrBuffer, sizeof(usrBuffer));
 CameraListener camTerm(Serial1);
 
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(4, LEDSTRIP_PIN, NEO_GRB + NEO_KHZ800);
+LedSegment segs[3] = {
+    LedSegment(0, 3),
+    LedSegment(0, 2),
+    LedSegment(3, 3),
+};
+LedStrip led = LedStrip(strip, segs, 3);
+
 void setup()
 {
   Serial.begin(115200);
@@ -83,9 +99,15 @@ void setup()
   // Identify
   Serial.println(F("START " __FILE__ " from " __DATE__));
 
+  led.setup();
+  Serial.print("led strip setup: ");
+  Serial.print(strip.numPixels());
+  Serial.println(" pixels defined.");
+
   servoServe.setup();
   Serial.println("servo setup");
   usrTerm.setup(".usr");
+
   servoServe.start();
   Serial1.flush();
 }
@@ -95,18 +117,28 @@ void processError(int err);
 void loop()
 {
   servoServe.loop();
+  led.loop();
 
   if (usrTerm.ready())
   {
     const char *buf = usrTerm.get();
     if (buf != NULL)
     {
-      if (buf[0] == '?')
+      char c = buf[0];
+      if (c == '?')
       {
         strncpy(testBuffer, buf, sizeof(testBuffer));
-        usrTerm.print(F("testing: "));
+        usrTerm.print(F("servo: "));
         usrTerm.println(testBuffer);
         int err = servoServe.process(testBuffer);
+        processError(err);
+      }
+      else if (c == '!')
+      {
+        strncpy(testBuffer, buf, sizeof(testBuffer));
+        usrTerm.print(F("led: "));
+        usrTerm.println(testBuffer);
+        int err = led.process(testBuffer);
         processError(err);
       }
       else
@@ -141,16 +173,16 @@ void processError(int err)
 {
   switch (err)
   {
-  case ERR_NOT_ENOUGH_ARGS:
+  case ERR_SERVO_NOT_ENOUGH_ARGS:
     usrTerm.println(F("ERR_NOT_ENOUGH_ARGS"));
     return;
-  case ERR_NOT_FOUND:
+  case ERR_SERVO_NOT_FOUND:
     usrTerm.println(F("ERR_NOT_FOUND"));
     return;
-  case ERR_INDEX:
+  case ERR_SERVO_INDEX:
     usrTerm.println(F("ERR_INDEX"));
     return;
-  case ERR_BAD_VALUE:
+  case ERR_SERVO_BAD_VALUE:
     usrTerm.println(F("ERR_BAD_VALUE"));
     return;
   }

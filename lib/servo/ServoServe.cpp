@@ -102,13 +102,13 @@ int ServoServe::process(const char *cmd)
     size_t len = strlen(cmd);
     if (len < 1)
     {
-        return ERR_OK;
+        return ERR_SERVO_OK;
     }
 
     if (cmd[0] != '?')
     {
         Serial.println(cmd);
-        return ERR_OK;
+        return ERR_SERVO_OK;
     }
 
     unsigned command, index, angle, speed, type = 0;
@@ -116,17 +116,17 @@ int ServoServe::process(const char *cmd)
                         &command, &index, &angle, &speed, &type);
     if (nitems < 2)
     {
-        return ERR_NOT_ENOUGH_ARGS;
+        return ERR_SERVO_NOT_ENOUGH_ARGS;
     }
 
     if (command < SERVO_FIRST || command > SERVO_LAST)
     {
-        return ERR_NOT_FOUND;
+        return ERR_SERVO_NOT_FOUND;
     }
 
     if (index >= count)
     {
-        return ERR_INDEX;
+        return ERR_SERVO_INDEX;
     }
 
     commands[index].command = command;
@@ -134,7 +134,7 @@ int ServoServe::process(const char *cmd)
     commands[index].speed = speed % 256;
     commands[index].type = type;
     commands[index].fresh = 1;
-    return ERR_OK;
+    return ERR_SERVO_OK;
 }
 
 void ServoServe::loop()
@@ -160,7 +160,7 @@ void ServoServe::loop()
                 ps->startEaseTo(cmd->angle, cmd->speed);
                 break;
             case SERVO_TEST:
-                ps->setEasingType(EASE_LINEAR);
+                ps->setEasingType(EASE_QUADRATIC_IN_OUT);
                 testAngle = (testAngle == cmd->type) ? cmd->angle : cmd->type;
                 ps->startEaseTo(testAngle, cmd->speed);
                 cmd->fresh = 1;

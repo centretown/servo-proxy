@@ -13,11 +13,11 @@
 #define SERVO_STOP 5
 #define SERVO_LAST 5
 
-#define ERR_OK 0
-#define ERR_NOT_ENOUGH_ARGS 1
-#define ERR_NOT_FOUND 2
-#define ERR_INDEX 3
-#define ERR_BAD_VALUE 4
+#define ERR_SERVO_OK 0
+#define ERR_SERVO_NOT_ENOUGH_ARGS 1
+#define ERR_SERVO_NOT_FOUND 2
+#define ERR_SERVO_INDEX 3
+#define ERR_SERVO_BAD_VALUE 4
 
 typedef struct
 {
