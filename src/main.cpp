@@ -21,7 +21,7 @@
 #define Serial SerialUSB
 #endif
 
-#define LEDSTRIP_PIN 12
+#define LEDSTRIP_PIN 13
 
 // only interrupt change pins on nano
 // #define SOFT_RX 2
@@ -74,11 +74,11 @@ char testBuffer[81] = {0};
 MicroTerm usrTerm(Serial, usrBuffer, sizeof(usrBuffer));
 CameraListener camTerm(Serial1);
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(4, LEDSTRIP_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(8, LEDSTRIP_PIN, NEO_GRB + NEO_KHZ800);
 LedSegment segs[3] = {
-    LedSegment(0, 3),
-    LedSegment(0, 2),
-    LedSegment(3, 3),
+    LedSegment(0, 7),
+    LedSegment(0, 4),
+    LedSegment(5, 7),
 };
 LedStrip led = LedStrip(strip, segs, 3);
 
