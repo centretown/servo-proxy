@@ -21,7 +21,10 @@
 #define Serial SerialUSB
 #endif
 
-#define LEDSTRIP_PIN 13
+// #define LEDSTRIP_PIN16 11
+#define LEDSTRIP_PIN23 11
+#define LEDSTRIP_PIN4 12
+#define LEDSTRIP_PIN8 13
 
 // only interrupt change pins on nano
 // #define SOFT_RX 2
@@ -74,13 +77,33 @@ char testBuffer[81] = {0};
 MicroTerm usrTerm(Serial, usrBuffer, sizeof(usrBuffer));
 CameraListener camTerm(Serial1);
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(8, LEDSTRIP_PIN, NEO_GRB + NEO_KHZ800);
-LedSegment segs[3] = {
-    LedSegment(0, 7),
-    LedSegment(0, 4),
-    LedSegment(5, 7),
+Adafruit_NeoPixel strip4 = Adafruit_NeoPixel(4, LEDSTRIP_PIN4, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip8 = Adafruit_NeoPixel(8, LEDSTRIP_PIN8, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip23 = Adafruit_NeoPixel(23, LEDSTRIP_PIN23, NEO_BRG + NEO_KHZ800);
+// Adafruit_NeoPixel strip16 = Adafruit_NeoPixel(7, LEDSTRIP_PIN16, NEO_BRG + NEO_KHZ800);
+LedSegment segs[] = {
+    LedSegment(0, 34),  //0
+    LedSegment(0, 3),   //1
+    LedSegment(4, 11),  //2
+    LedSegment(12, 34), //3
+    LedSegment(15, 34), //4
+    LedSegment(0, 0),   //5
+    LedSegment(0, 1),   //6
+    LedSegment(4, 4),   //7
+    LedSegment(4, 4),   //8
+    LedSegment(34, 34), //9
+    LedSegment(30, 33), //10
 };
-LedStrip led = LedStrip(strip, segs, 3);
+
+Adafruit_NeoPixel *strips[] = {
+    &strip4,
+    &strip8,
+    &strip23,
+    // &strip16,
+};
+
+LedStrip led = LedStrip(strips, sizeof(strips) / sizeof(strips[0]),
+                        segs, sizeof(segs) / sizeof(segs[0]));
 
 void setup()
 {
@@ -100,7 +123,7 @@ void setup()
 
   led.setup();
   Serial.print("led strip setup: ");
-  Serial.print(strip.numPixels());
+  Serial.print(led.numPixels());
   Serial.println(" pixels defined.");
 
   servoServe.setup();
