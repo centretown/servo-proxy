@@ -36,5 +36,4 @@ public:
     uint16_t numPixels() { return nPixels; }
     virtual void setPixelColor(uint16_t n, uint32_t c);
     virtual void show(uint16_t begin, uint16_t end);
-    virtual void brightness(uint16_t begin, uint16_t end, uint8_t val);
 };

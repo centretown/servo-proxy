@@ -79,13 +79,6 @@ void LedSegment::start(uint8_t command, const unsigned *parms, size_t nparms)
     {
         return;
     }
-    if (command == STRIP_BRIGHTNESS)
-    {
-        if (nparms>1){
-
-        }
-        return;
-    }
 
     unsigned colors[3] = {0};
     int colorCount = (nparms < 3) ? nparms : 3;

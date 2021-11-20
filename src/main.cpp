@@ -8,9 +8,10 @@
 #endif
 
 #include "CameraListener.h"
-
 #include "ServoServe.h"
 #include "LedStrip.h"
+#include "OledDisplay.h"
+#include "TouchSensor.h"
 
 // for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
 #if !defined(LED_BUILTIN) && !defined(ESP32)
@@ -25,6 +26,25 @@
 #define LEDSTRIP_PIN23 11
 #define LEDSTRIP_PIN4 12
 #define LEDSTRIP_PIN8 13
+
+#define LEDSTRIP_PIN9a 7
+#define LEDSTRIP_PIN9b 8
+#define LEDSTRIP_PIN9c 9
+#define LEDSTRIP_PIN9d 10
+
+// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+// The pins for I2C are defined by the Wire-library.
+// On an arduino UNO:       A4(SDA), A5(SCL)
+// On an arduino MEGA 2560: 20(SDA), 21(SCL)
+// On an arduino LEONARDO:   2(SDA),  3(SCL), ...
+#define SCREEN_WIDTH 128    // OLED display width, in pixels
+#define SCREEN_HEIGHT 32    // OLED display height, in pixels
+#define OLED_RESET -1       // Reset pin # (or -1 if sharing Arduino reset pin)
+#define SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+OledDisplay oled(display, SCREEN_ADDRESS);
+#define SENSOR_PIN 44
+TouchSensor touch(SENSOR_PIN);
 
 // only interrupt change pins on nano
 // #define SOFT_RX 2
@@ -56,21 +76,22 @@ ServoEasing Servo1;
 ServoEasing Servo2;
 ServoEasing Servo3;
 ServoEasing Servo4;
-ServoEasing Servo5;
-ServoEasing Servo6;
-ServoEasing Servo7;
-ServoEasing Servo8;
-ServoEasing Servo9;
+// ServoEasing Servo5;
+// ServoEasing Servo6;
+// ServoEasing Servo7;
+// ServoEasing Servo8;
+// ServoEasing Servo9;
 
 #endif
 
-ServoEasing *servos[] = {&Servo1, &Servo2, &Servo3,
-                         &Servo4, &Servo5, &Servo6,
-                         &Servo7, &Servo8, &Servo9};
+// ServoEasing *servos[] = {&Servo1, &Servo2, &Servo3,
+//                          &Servo4, &Servo5, &Servo6,
+//                          &Servo7, &Servo8, &Servo9};
+ServoEasing *servos[] = {&Servo1, &Servo2, &Servo3, &Servo4};
 ServoEasing **pServos = servos;
 
 // Only works on pin 2, 3, 5, 6, 7, 8, 44, 45 and 46 on Arduino Mega!
-int8_t expanderPins[] = {2, 3, 5, 6, 7, 8, 44, 45, 46};
+int8_t expanderPins[] = {2, 3, 5, 6};
 ServoServe servoServe(pServos, expanderPins, sizeof(expanderPins) / sizeof(expanderPins)[0]);
 char usrBuffer[81] = {0};
 char testBuffer[81] = {0};
@@ -80,9 +101,15 @@ CameraListener camTerm(Serial1);
 Adafruit_NeoPixel strip4 = Adafruit_NeoPixel(4, LEDSTRIP_PIN4, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip8 = Adafruit_NeoPixel(8, LEDSTRIP_PIN8, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip23 = Adafruit_NeoPixel(23, LEDSTRIP_PIN23, NEO_BRG + NEO_KHZ800);
+
+Adafruit_NeoPixel strip9a = Adafruit_NeoPixel(9, LEDSTRIP_PIN9a, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip9b = Adafruit_NeoPixel(9, LEDSTRIP_PIN9b, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip9c = Adafruit_NeoPixel(9, LEDSTRIP_PIN9c, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip9d = Adafruit_NeoPixel(9, LEDSTRIP_PIN9d, NEO_GRB + NEO_KHZ800);
+
 // Adafruit_NeoPixel strip16 = Adafruit_NeoPixel(7, LEDSTRIP_PIN16, NEO_BRG + NEO_KHZ800);
 LedSegment segs[] = {
-    LedSegment(0, 34),  //0
+    LedSegment(0, 70),  //0
     LedSegment(0, 3),   //1
     LedSegment(4, 11),  //2
     LedSegment(12, 34), //3
@@ -93,13 +120,22 @@ LedSegment segs[] = {
     LedSegment(4, 4),   //8
     LedSegment(34, 34), //9
     LedSegment(30, 33), //10
+    LedSegment(35, 70), //11
+    LedSegment(35, 43), //12
+    LedSegment(44, 52), //13
+    LedSegment(53, 60), //14
+    LedSegment(61, 70), //15
+
 };
 
 Adafruit_NeoPixel *strips[] = {
     &strip4,
     &strip8,
     &strip23,
-    // &strip16,
+    &strip9a,
+    &strip9b,
+    &strip9c,
+    &strip9d,
 };
 
 LedStrip led = LedStrip(strips, sizeof(strips) / sizeof(strips[0]),
@@ -132,12 +168,64 @@ void setup()
 
   servoServe.start();
   Serial1.flush();
+
+  oled.setup();
+  if (oled.isActive())
+  {
+    Serial.println("OLED OK!");
+  }
+  else
+  {
+    Serial.println("OLED FAILED!");
+  }
+
+  touch.setup();
+  Serial.println("Touch Sensor OK!");
 }
 
 void processError(int err);
+uint8_t pic = 0;
+bool blinking = false;
 
 void loop()
 {
+  touch.loop();
+  ActionState state = touch.getState();
+  if (state == TOUCH_TAP)
+  {
+    pic++;
+    if (pic > 2)
+    {
+      pic = 0;
+    }
+    switch (pic)
+    {
+    case 0:
+      oled.dartboard();
+      break;
+    case 1:
+      oled.dog();
+      break;
+    case 2:
+      oled.panda();
+      break;
+    }
+  }
+  else if (state == TOUCH_HOLD)
+  {
+    unsigned parms[1] = {0};
+    if (blinking)
+    {
+      segs[0].start(1, parms, 1);
+      blinking = false;
+    }
+    else
+    {
+      segs[0].start(8, parms, 1);
+      blinking = true;
+    }
+  }
+
   servoServe.loop();
   led.loop();
 
@@ -161,6 +249,14 @@ void loop()
         usrTerm.print(F("led: "));
         usrTerm.println(testBuffer);
         int err = led.process(testBuffer);
+        processError(err);
+      }
+      else if (c == '$')
+      {
+        strncpy(testBuffer, buf, sizeof(testBuffer));
+        usrTerm.print(F("oled: "));
+        usrTerm.println(testBuffer);
+        int err = oled.process(testBuffer);
         processError(err);
       }
       else

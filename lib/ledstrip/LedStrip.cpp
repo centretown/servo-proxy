@@ -128,21 +128,3 @@ void LedStrip::show(uint16_t begin, uint16_t end)
     }
   }
 }
-
-void LedStrip::brightness(uint16_t begin, uint16_t end, uint8_t val)
-{
-  uint16_t border = 0;
-  for (uint8_t i = 0; i < nStrips; i++)
-  {
-    border = borders[i];
-    if (begin < border)
-    {
-      strips[i]->setBrightness(val);
-      strips[i]->show();
-      if (end < border)
-      {
-        break;
-      }
-    }
-  }
-}

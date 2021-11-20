@@ -17,7 +17,6 @@ enum LedCommand
     STRIP_RAINBOW_CYCLE,   // 6
     STRIP_THEATRE,         // 7
     STRIP_THEATRE_RAINBOW, // 8
-    STRIP_BRIGHTNESS,      // 9 default min 0, max 255, def 50
     STRIP_LAST
 };
 
