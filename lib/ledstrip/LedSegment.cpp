@@ -44,11 +44,11 @@ void LedSegment::setupCmd()
         break;
 
     case STRIP_WIPE:
-        cmd.indeces[0].max = end;
+        cmd.indeces[0].max = end - begin;
         break;
 
     case STRIP_RAINBOW:
-        cmd.indeces[0].max = end;
+        cmd.indeces[0].max = end - begin;
         cmd.indeces[1].max = 256;
         break;
 
@@ -200,15 +200,16 @@ void LedSegment::blink()
 bool LedSegment::nextStep()
 {
     led_index *pidx;
-    for (uint16_t i = 0; i < sizeof(cmd.indeces) / sizeof(cmd.indeces[0]); i++)
+    for (uint16_t i = 0;
+         i < sizeof(cmd.indeces) / sizeof(cmd.indeces[0]); i++)
     {
-        pidx = &cmd.indeces[i];
+        pidx = cmd.indeces + i;
         if (pidx->max == 0)
         {
             return false;
         }
 
-        if (pidx->count <= pidx->max)
+        if (pidx->count < pidx->max)
         {
             pidx->count++;
             return true;
@@ -221,14 +222,18 @@ bool LedSegment::nextStep()
 
 void LedSegment::colorWipe()
 {
-    uint16_t index = cmd.indeces[0].count;
-    ledWriter->setPixelColor(index, cmd.color);
-    ledWriter->show(index, index);
+    uint16_t i = begin + cmd.indeces[0].count;
+    if (i > end)
+    {
+        Serial.println("count exceeds end");
+    }
+    ledWriter->setPixelColor(i, cmd.color);
+    ledWriter->show(i, i);
 }
 
 void LedSegment::rainbow()
 {
-    uint16_t i = cmd.indeces[0].count;
+    uint16_t i = begin + cmd.indeces[0].count;
     uint16_t j = cmd.indeces[1].count;
     ledWriter->setPixelColor(i, wheel((i + j) & 255));
     ledWriter->show(i, i);

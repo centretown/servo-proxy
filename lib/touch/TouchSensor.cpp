@@ -44,11 +44,10 @@ void TouchSensor::loop()
     {
         action = TOUCH_HOLD;
     }
-    else 
+    else
     {
         action = TOUCH_TAP;
     }
-    lastChange = now;
 }
 
 ActionState TouchSensor::getState()

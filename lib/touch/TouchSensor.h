@@ -9,7 +9,6 @@ enum ActionState
     TOUCH_NOP,     // nothing happening
     TOUCH_PENDING, // something happening
     TOUCH_TAP,     // completed tap
-    TOUCH_DOUBLE_TAP,
     TOUCH_HOLD,
 };
 

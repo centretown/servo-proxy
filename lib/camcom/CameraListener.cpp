@@ -15,6 +15,7 @@ bool CameraListener::ready()
             bufferCount = 0;
             snprintf(buffer, sizeof(buffer), "Overflow");
             messageReady = true;
+            stream.flush();
             return true;
         }
 

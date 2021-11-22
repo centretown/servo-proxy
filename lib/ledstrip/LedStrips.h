@@ -13,22 +13,30 @@
 #define ERR_STRIP_INDEX 3
 #define ERR_STRIP_BAD_VALUE 4
 
-#define NO_BORDER 0xff
+#define NO_BORDER 0
 
-class LedStrip : public LedWriter
+#define MAX_STRIPS 8
+
+typedef struct
+{
+    size_t begin = 0;
+    size_t end = 0;
+    Adafruit_NeoPixel *strip = NULL;
+} ledStrip;
+
+class LedStrips : public LedWriter
 {
 private:
-    Adafruit_NeoPixel **strips = NULL;
-    uint8_t nStrips = 0;
+    size_t nStrips = 0;
+    ledStrip strips[MAX_STRIPS];
     LedSegment *segments = NULL;
-    uint8_t nSegments = 0;
-    uint16_t nPixels = 0;
-    uint16_t borders[8] = {NO_BORDER};
+    size_t nSegments = 0;
+    size_t nPixels = 0;
 
 public:
-    LedStrip(Adafruit_NeoPixel **strips, uint8_t nStrips,
-             LedSegment *segs, uint8_t nSegs);
-    ~LedStrip();
+    LedStrips(Adafruit_NeoPixel **strips, size_t nStrips,
+              LedSegment *segs, size_t nSegs);
+    ~LedStrips();
 
     int process(const char *cmd);
     void setup();

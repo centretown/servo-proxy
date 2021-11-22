@@ -41,9 +41,10 @@ typedef void (LedSegment::*LedFunc)() const;
 
 class LedSegment
 {
-private:
+public:
     uint16_t begin;
     uint16_t end;
+private:
     uint32_t wheel(byte WheelPos);
     LedWriter *ledWriter;
     // Adafruit_NeoPixel *strip;
