@@ -2,13 +2,13 @@
 
 #pragma once
 
-// #define USE_SERVO_LIB
+#define USE_SERVO_LIB
 
 #define USE_LEDSTRIP_LIB
 
-// #define USE_OLED_LIB
+#define USE_OLED_LIB
 
-// #define USE_TOUCH_LIB
+#define USE_TOUCH_LIB
 
 //////////////////////////////
 #if defined(USE_SERVO_LIB)
@@ -35,7 +35,7 @@ ServoEasing Servo4;
 ServoEasing *servos[] = {&Servo1, &Servo2, &Servo3, &Servo4};
 ServoEasing **pServos = servos;
 // Only works on pin 2, 3, 5, 6, 7, 8, 44, 45 and 46 on Arduino Mega!
-int8_t expanderPins[] = {44, 45};
+int8_t expanderPins[] = {2, 3, 5, 6};
 ServoServe servoServe(pServos, expanderPins,
                       sizeof(expanderPins) / sizeof(expanderPins)[0]);
 
@@ -67,30 +67,27 @@ OledDisplay oled(display, SCREEN_ADDRESS);
 #include <avr/power.h>
 #endif
 
-#define LEDSTRIP_PIN10 8
-#define LEDSTRIP_PIN11 9
-#define LEDSTRIP_PIN12 10
-#define LEDSTRIP_PIN13 11
+#define LEDSTRIP_PIN11 11
+#define LEDSTRIP_PIN12 12
+#define LEDSTRIP_PIN13 13
 
-Adafruit_NeoPixel strip9a(9, LEDSTRIP_PIN10, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel strip9b(9, LEDSTRIP_PIN11, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel strip9c(9, LEDSTRIP_PIN12, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel strip9d(9, LEDSTRIP_PIN13, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip19(19, LEDSTRIP_PIN11, NEO_BRG + NEO_KHZ800);
+Adafruit_NeoPixel strip4(4, LEDSTRIP_PIN12, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip8(8, LEDSTRIP_PIN13, NEO_GRB + NEO_KHZ800);
 
 // Adafruit_NeoPixel strip16 = Adafruit_NeoPixel(7, LEDSTRIP_PIN16, NEO_BRG + NEO_KHZ800);
 LedSegment segs[] = {
-    LedSegment(0, 35),  //0
-    LedSegment(0, 8),   //1
-    LedSegment(9, 17),  //2
-    LedSegment(18, 26), //3
-    LedSegment(27, 35), //3
+    LedSegment(0, 30),  //0
+    LedSegment(0, 3),   //3
+    LedSegment(5, 11),  //4
+    LedSegment(12, 30), //1
+    LedSegment(12, 30), //2
 };
 
 Adafruit_NeoPixel *strips[] = {
-    &strip9a,
-    &strip9b,
-    &strip9c,
-    &strip9d,
+    &strip4,
+    &strip8,
+    &strip19,
 };
 
 LedStrips led(strips, sizeof(strips) / sizeof(strips[0]),

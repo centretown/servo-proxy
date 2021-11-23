@@ -39,7 +39,7 @@ void LedSegment::setupCmd()
         break;
 
     case STRIP_BLINK:
-        cmd.indeces[0].max = 1;
+        cmd.indeces[0].max = 2;
         cmd.indeces[1].max = 100;
         break;
 
@@ -57,14 +57,14 @@ void LedSegment::setupCmd()
         break;
 
     case STRIP_THEATRE:
-        cmd.indeces[0].max = 1;
-        cmd.indeces[1].max = 2;
+        cmd.indeces[0].max = 2;
+        cmd.indeces[1].max = 3;
         cmd.indeces[2].max = 256;
         break;
 
     case STRIP_THEATRE_RAINBOW:
-        cmd.indeces[0].max = 1;
-        cmd.indeces[1].max = 2;
+        cmd.indeces[0].max = 2;
+        cmd.indeces[1].max = 3;
         cmd.indeces[2].max = 256;
         break;
     default:
@@ -209,7 +209,8 @@ bool LedSegment::nextStep()
             return false;
         }
 
-        if (++pidx->count < pidx->max)
+        pidx->count++;
+        if (pidx->count < pidx->max)
         {
             return true;
         }
@@ -222,10 +223,6 @@ bool LedSegment::nextStep()
 void LedSegment::colorWipe()
 {
     uint16_t i = begin + cmd.indeces[0].count;
-    if (i > end)
-    {
-        Serial.println("count exceeds end");
-    }
     ledWriter->setPixelColor(i, cmd.color);
     ledWriter->show(i, i);
 }
@@ -253,9 +250,9 @@ void LedSegment::theaterChase()
         (cmd.indeces[0].count == 0) ? cmd.color : 0;
     uint16_t step = cmd.indeces[1].count;
 
-    for (uint16_t i = begin; i <= end; i += theatreInc)
+    for (uint16_t i = begin + step; i <= end; i += theatreInc)
     {
-        ledWriter->setPixelColor(i + step, color);
+        ledWriter->setPixelColor(i, color);
     }
     ledWriter->show(begin, end);
 }
@@ -267,18 +264,16 @@ void LedSegment::theaterChaseRainbow()
     uint16_t index = cmd.indeces[2].count;
     if (phase == 0)
     {
-        uint16_t i = begin;
-        for (; i <= end; i += theatreInc)
+        for (uint16_t i = begin + step; i <= end; i += theatreInc)
         {
-            ledWriter->setPixelColor(i + step, wheel((i + index) % 255));
+            ledWriter->setPixelColor(i, wheel((i + index) % 255));
         }
     }
     else
     {
-        uint16_t i = begin;
-        for (; i <= end; i += theatreInc)
+        for (uint16_t i = begin + step; i <= end; i += theatreInc)
         {
-            ledWriter->setPixelColor(i + step, 0);
+            ledWriter->setPixelColor(i, 0);
         }
     }
     ledWriter->show(begin, end);

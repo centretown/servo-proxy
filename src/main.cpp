@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <MicroTerm.h>
 #include "CameraListener.h"
+#include "localerror.h"
 #include "config.h"
 
 // for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
@@ -49,8 +50,6 @@ void setup()
 #if defined(USE_SERVO_LIB)
   servoServe.setup();
   Serial.println("servo setup");
-  usrTerm.setup(".usr");
-
   servoServe.start();
   Serial1.flush();
 #endif
@@ -71,6 +70,8 @@ void setup()
   touch.setup();
   Serial.println("Touch Sensor OK!");
 #endif
+
+  usrTerm.setup(".usr");
 }
 
 void processError(int err);
@@ -236,7 +237,6 @@ void processBuffer(const char *buf)
   }
 }
 
-#include "error.h"
 void processError(int err)
 {
   switch (err)

@@ -39,9 +39,9 @@ void LedStrips::setup()
     ledStrip *p = strips + i;
 
     p->strip->begin();
-    // strips[i]->setBrightness(50);
-    p->strip->clear(); // Initialize all pixels to 'off'
-    p->strip->show();  // Initialize all pixels to 'off'
+    p->strip->setBrightness(50);
+    p->strip->clear();
+    p->strip->show();
 
     Serial.print("strip ");
     Serial.print(i);
