@@ -44,11 +44,11 @@ void LedSegment::setupCmd()
         break;
 
     case STRIP_WIPE:
-        cmd.indeces[0].max = end - begin;
+        cmd.indeces[0].max = count;
         break;
 
     case STRIP_RAINBOW:
-        cmd.indeces[0].max = end - begin;
+        cmd.indeces[0].max = count;
         cmd.indeces[1].max = 256;
         break;
 
@@ -209,9 +209,8 @@ bool LedSegment::nextStep()
             return false;
         }
 
-        if (pidx->count < pidx->max)
+        if (++pidx->count < pidx->max)
         {
-            pidx->count++;
             return true;
         }
         pidx->count = 0;

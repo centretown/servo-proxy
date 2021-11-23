@@ -74,6 +74,7 @@ void setup()
 }
 
 void processError(int err);
+void processBuffer(const char *buf);
 
 ////////////////////////////////////////////
 #if defined(USE_TOUCH_LIB)
@@ -172,48 +173,7 @@ void loop()
   if (usrTerm.ready())
   {
     const char *buf = usrTerm.get();
-    if (buf != NULL)
-    {
-      char c = buf[0];
-
-#if defined(USE_SERVO_LIB)
-      if (c == '?')
-      {
-        strncpy(testBuffer, buf, sizeof(testBuffer));
-        usrTerm.print(F("servo: "));
-        usrTerm.println(testBuffer);
-        int err = servoServe.process(testBuffer);
-        processError(err);
-        return;
-      }
-#endif
-
-#if defined(USE_LEDSTRIP_LIB)
-      if (c == '!')
-      {
-        strncpy(testBuffer, buf, sizeof(testBuffer));
-        usrTerm.print(F("led: "));
-        usrTerm.println(testBuffer);
-        int err = led.process(testBuffer);
-        processError(err);
-        return;
-      }
-#endif
-
-#if defined(USE_OLED_LIB)
-      if (c == '$')
-      {
-        strncpy(testBuffer, buf, sizeof(testBuffer));
-        usrTerm.print(F("oled: "));
-        usrTerm.println(testBuffer);
-        int err = oled.process(testBuffer);
-        processError(err);
-        return;
-      }
-#endif
-
-      Serial1.println(buf);
-    }
+    processBuffer(buf);
   }
 
   if (camTerm.ready())
@@ -224,33 +184,73 @@ void loop()
       return;
     }
 
-    char *camBuffer = camTerm.get();
-    int err = servoServe.process(camBuffer);
-    processError(err);
-    if (err > 0)
-    {
-      return;
-    }
-    usrTerm.println(camBuffer);
-    // usrTerm.prompt();
-    return;
+    const char *buf = camTerm.get();
+    processBuffer(buf);
   }
 }
 
+void processBuffer(const char *buf)
+{
+
+  if (buf != NULL)
+  {
+    char c = buf[0];
+
+#if defined(USE_SERVO_LIB)
+    if (c == '?')
+    {
+      strncpy(testBuffer, buf, sizeof(testBuffer));
+      usrTerm.print(F("servo: "));
+      usrTerm.println(testBuffer);
+      int err = servoServe.process(testBuffer);
+      processError(err);
+      return;
+    }
+#endif
+
+#if defined(USE_LEDSTRIP_LIB)
+    if (c == '!')
+    {
+      strncpy(testBuffer, buf, sizeof(testBuffer));
+      usrTerm.print(F("led: "));
+      usrTerm.println(testBuffer);
+      int err = led.process(testBuffer);
+      processError(err);
+      return;
+    }
+#endif
+
+#if defined(USE_OLED_LIB)
+    if (c == '$')
+    {
+      strncpy(testBuffer, buf, sizeof(testBuffer));
+      usrTerm.print(F("oled: "));
+      usrTerm.println(testBuffer);
+      int err = oled.process(testBuffer);
+      processError(err);
+      return;
+    }
+#endif
+
+    Serial1.println(buf);
+  }
+}
+
+#include "error.h"
 void processError(int err)
 {
   switch (err)
   {
-  case ERR_SERVO_NOT_ENOUGH_ARGS:
+  case ERR_NOT_ENOUGH_ARGS:
     usrTerm.println(F("ERR_NOT_ENOUGH_ARGS"));
     return;
-  case ERR_SERVO_NOT_FOUND:
+  case ERR_NOT_FOUND:
     usrTerm.println(F("ERR_NOT_FOUND"));
     return;
-  case ERR_SERVO_INDEX:
+  case ERR_INDEX:
     usrTerm.println(F("ERR_INDEX"));
     return;
-  case ERR_SERVO_BAD_VALUE:
+  case ERR_BAD_VALUE:
     usrTerm.println(F("ERR_BAD_VALUE"));
     return;
   }

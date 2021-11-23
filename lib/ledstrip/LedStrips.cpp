@@ -131,15 +131,12 @@ void LedStrips::show(uint16_t begin, uint16_t end)
   for (uint16_t i = 0; i < nStrips; i++)
   {
     ledStrip *p = strips + i;
-    if (index >= p->begin && index <= p->end)
+    if (index > p->end)
     {
-      p->strip->show();
-      index += p->strip->numPixels();
+      continue;
     }
 
-    if (index > end)
-    {
-      return;
-    }
+    p->strip->show();
+    index = p->end + 1;
   }
 }
