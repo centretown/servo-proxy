@@ -6,9 +6,9 @@
 
 #define USE_LEDSTRIP_LIB
 
-#define USE_OLED_LIB
+// #define USE_OLED_LIB
 
-#define USE_TOUCH_LIB
+// #define USE_TOUCH_LIB
 
 #include "Menu.h"
 
@@ -86,10 +86,10 @@ void servoEndPoint(Menu *menu)
 {
     uint8_t command = menu->Ancestor(1)->Index() + 1;
     uint8_t index = menu->Ancestor(2)->Index();
-    char buf[80];
-    snprintf(buf, sizeof(buf), "led <%s i=%u %u %u %u %u>",
-             menu->Label(), index, command, angle, speed, type);
-    Serial.println(buf);
+    // char buf[80];
+    // snprintf(buf, sizeof(buf), "led <%s i=%u %u %u %u %u>",
+    //          menu->Label(), index, command, angle, speed, type);
+    // Serial.println(buf);
     angle = (angle == 180) ? 0 : 180;
     type = (type == 0) ? 180 : 0;
     // speed = 100;
@@ -143,8 +143,9 @@ void oledShow(Menu *menu)
     uint8_t index = menu->Index();
     if (index != UNSELECTED)
     {
+        IconID id = (Menu::Root()->Index() == 0) ? ICON_LEDSTRIP : ICON_GEARS;
         menu = menu->nodes[index];
-        oled.drawText(menu->Label());
+        oled.drawMenu(menu->Label(), id);
     }
 }
 #endif
@@ -184,16 +185,16 @@ Adafruit_NeoPixel *strips[] = {
 LedStrips led(strips, sizeof(strips) / sizeof(strips[0]),
               segs, sizeof(segs) / sizeof(segs[0]));
 
-Menu ledMenu("LED'S");
+Menu ledMenu("LED Strips");
 
 void ledEndPoint(Menu *menu)
 {
     uint8_t command = menu->Ancestor(1)->Index() + 1;
     uint8_t index = menu->Ancestor(2)->Index() + 1;
-    char buf[80];
-    snprintf(buf, sizeof(buf), "led <%s i=%u %u>",
-             menu->Label(), index, command);
-    Serial.println(buf);
+    // char buf[80];
+    // snprintf(buf, sizeof(buf), "led <%s i=%u %u>",
+    //          menu->Label(), index, command);
+    // Serial.println(buf);
     unsigned parms[4] = {127, 100, 35, 50};
     segs[index].start(command, parms, sizeof(parms));
 }
@@ -202,18 +203,18 @@ void initLedMenu()
 {
     char title[16];
     rootMenu.Add(&ledMenu);
-    for (unsigned servoNum = 0; servoNum < 4; servoNum++)
+    for (unsigned segNum = 0; segNum < 4; segNum++)
     {
-        snprintf(title, sizeof(title), "LED-%u", servoNum + 1);
+        snprintf(title, sizeof(title), "Strip-%u", segNum + 1);
         Menu *sub = ledMenu.Add(new Menu(title));
         sub->Add(new Menu("Reset", ledEndPoint));
         sub->Add(new Menu("Solid", ledEndPoint));
         sub->Add(new Menu("Blink", ledEndPoint));
         sub->Add(new Menu("Wipe", ledEndPoint));
-        sub->Add(new Menu("Rainbow", ledEndPoint));
         sub->Add(new Menu("Cycle", ledEndPoint));
+        sub->Add(new Menu("Rainbow", ledEndPoint));
         sub->Add(new Menu("Chase", ledEndPoint));
-        sub->Add(new Menu("Chase 2", ledEndPoint));
+        sub->Add(new Menu("CycleChase", ledEndPoint));
         sub->Add(new Menu("Exit"));
     }
     ledMenu.Add(new Menu("Exit"));
@@ -250,8 +251,9 @@ void touchMenu()
 
 #if defined(USE_OLED_LIB)
     oledShow(menu);
-#endif
+#else
     show(menu);
+#endif
 }
 
 #endif

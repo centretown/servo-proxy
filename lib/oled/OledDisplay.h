@@ -26,6 +26,17 @@ enum OledCommand
     OLED_PANDA,     //5
 };
 
+enum IconID
+{
+    ICON_DARTBOARD,
+    ICON_DOG,
+    ICON_PANDA,
+    ICON_LEDSTRIP,
+    ICON_GEARS,
+
+    ICON_COUNT,
+};
+
 class OledDisplay
 {
 private:
@@ -51,10 +62,12 @@ public:
     int process(const char *buf);
     void start(uint8_t command, char *parms, size_t nparms);
 
-    void dog();
-    void dartboard();
-    void panda();
-    void strip();
+    void dog() { drawIcon(ICON_DOG, 0, 0); }
+    void dartboard() { drawIcon(ICON_DARTBOARD, 0, 0); }
+    void panda() { drawIcon(ICON_PANDA, 0, 0); }
+    void strip() { drawIcon(ICON_LEDSTRIP, 0, 0); }
+    void drawIcon(IconID, int16_t, int16_t);
+    void drawMenu(const char *, IconID);
 };
 
 #endif

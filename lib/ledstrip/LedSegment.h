@@ -9,15 +9,15 @@
 
 enum LedCommand
 {
-    STRIP_NOP,             // 0-do nothing quickly
-    STRIP_RESET,           // 1-reset to blank
-    STRIP_SOLID,           // 2
-    STRIP_BLINK,           // 3
-    STRIP_WIPE,            // 4
-    STRIP_RAINBOW,         // 5
-    STRIP_RAINBOW_CYCLE,   // 6
-    STRIP_THEATRE,         // 7
-    STRIP_THEATRE_RAINBOW, // 8
+    STRIP_NOP,         // 0-do nothing quickly
+    STRIP_RESET,       // 1-reset to blank
+    STRIP_SOLID,       // 2
+    STRIP_BLINK,       // 3
+    STRIP_WIPE,        // 4
+    STRIP_CYCLE,       // 5
+    STRIP_RAINBOW,     // 6
+    STRIP_CHASE,       // 7
+    STRIP_CHASE_CYCLE, // 8
     STRIP_LAST
 };
 
@@ -45,6 +45,7 @@ class LedSegment
 public:
     uint16_t begin;
     uint16_t end;
+
 private:
     uint32_t wheel(byte WheelPos);
     LedWriter *ledWriter;
@@ -67,10 +68,10 @@ public:
     void solid();
     void blink();
     void colorWipe();
+    void cycle();
     void rainbow();
-    void rainbowCycle();
-    void theaterChase();
-    void theaterChaseRainbow();
+    void chase();
+    void chaseCycle();
 };
 
 #endif

@@ -43,6 +43,7 @@ public:
 
     static Menu *Current();
     static Menu *Ancestor(uint8_t gen);
+    static Menu *Root();
     static void Select();
     static void Next();
     static void Previous();

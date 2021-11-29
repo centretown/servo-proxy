@@ -49,22 +49,22 @@ void LedSegment::setupCmd()
         cmd.indeces[0].max = count;
         break;
 
-    case STRIP_RAINBOW:
+    case STRIP_CYCLE:
         cmd.indeces[0].max = count;
         cmd.indeces[1].max = 256;
         break;
 
-    case STRIP_RAINBOW_CYCLE:
+    case STRIP_RAINBOW:
         cmd.indeces[0].max = 256 * 5;
         break;
 
-    case STRIP_THEATRE:
+    case STRIP_CHASE:
         cmd.indeces[0].max = 2;
         cmd.indeces[1].max = 3;
         cmd.indeces[2].max = 256;
         break;
 
-    case STRIP_THEATRE_RAINBOW:
+    case STRIP_CHASE_CYCLE:
         cmd.indeces[0].max = 2;
         cmd.indeces[1].max = 3;
         cmd.indeces[2].max = 256;
@@ -145,20 +145,20 @@ void LedSegment::loop()
         colorWipe();
         break;
 
+    case STRIP_CYCLE:
+        cycle();
+        break;
+
     case STRIP_RAINBOW:
         rainbow();
         break;
 
-    case STRIP_RAINBOW_CYCLE:
-        rainbowCycle();
+    case STRIP_CHASE:
+        chase();
         break;
 
-    case STRIP_THEATRE:
-        theaterChase();
-        break;
-
-    case STRIP_THEATRE_RAINBOW:
-        theaterChaseRainbow();
+    case STRIP_CHASE_CYCLE:
+        chaseCycle();
         break;
     default:
         break;
@@ -229,7 +229,7 @@ void LedSegment::colorWipe()
     ledWriter->show(i, i);
 }
 
-void LedSegment::rainbow()
+void LedSegment::cycle()
 {
     uint16_t i = begin + cmd.indeces[0].count;
     uint16_t j = cmd.indeces[1].count;
@@ -237,7 +237,7 @@ void LedSegment::rainbow()
     ledWriter->show(i, i);
 }
 
-void LedSegment::rainbowCycle()
+void LedSegment::rainbow()
 {
     for (uint16_t i = begin; i <= end; i++)
     {
@@ -246,7 +246,7 @@ void LedSegment::rainbowCycle()
     ledWriter->show(begin, end);
 }
 
-void LedSegment::theaterChase()
+void LedSegment::chase()
 {
     uint32_t color =
         (cmd.indeces[0].count == 0) ? cmd.color : 0;
@@ -259,7 +259,7 @@ void LedSegment::theaterChase()
     ledWriter->show(begin, end);
 }
 
-void LedSegment::theaterChaseRainbow()
+void LedSegment::chaseCycle()
 {
     uint16_t phase = cmd.indeces[0].count;
     uint16_t step = cmd.indeces[1].count;

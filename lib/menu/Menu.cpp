@@ -4,6 +4,10 @@
 
 Menu rootMenu("root");
 
+Menu *Menu::Root() {
+    return &rootMenu;
+}
+
 Menu *Menu::stack[MAX_LEVELS] = {NULL};
 uint8_t Menu::stackPtr = 0;
 
