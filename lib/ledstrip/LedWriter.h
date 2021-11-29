@@ -1,4 +1,5 @@
 // Copyright (c) 2021 Dave Marsh. See LICENSE.
+#ifdef ARDUINO
 
 #pragma once
 
@@ -17,3 +18,5 @@ public:
     static uint8_t sine8(uint8_t x);
     static uint8_t gamma8(uint8_t x);
 };
+
+#endif

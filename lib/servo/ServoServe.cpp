@@ -1,4 +1,5 @@
 // Copyright (c) 2021 Dave Marsh. See LICENSE.
+#ifdef ARDUINO
 
 #include "ServoServe.h"
 
@@ -92,10 +93,6 @@ void ServoServe::test(int angle)
     delay(500);
 }
 
-void ServoServe::start()
-{
-}
-
 // command format
 int ServoServe::process(const char *cmd)
 {
@@ -129,6 +126,11 @@ int ServoServe::process(const char *cmd)
         return ERR_SERVO_INDEX;
     }
 
+    return start(index, command, angle, speed, type);
+}
+
+int ServoServe::start(uint8_t index, uint8_t command, uint8_t angle, uint8_t speed, uint8_t type)
+{
     commands[index].command = command;
     commands[index].angle = angle % 181;
     commands[index].speed = speed % 256;
@@ -172,3 +174,5 @@ void ServoServe::loop()
         }
     }
 }
+
+#endif

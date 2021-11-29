@@ -1,4 +1,5 @@
 // Copyright (c) 2021 Dave Marsh. See LICENSE.
+#ifdef ARDUINO
 
 #include "LedStrips.h"
 
@@ -140,3 +141,5 @@ void LedStrips::show(uint16_t begin, uint16_t end)
     index = p->end + 1;
   }
 }
+
+#endif

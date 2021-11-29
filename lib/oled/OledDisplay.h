@@ -1,4 +1,5 @@
 // Copyright (c) 2021 Dave Marsh. See LICENSE.
+#ifdef ARDUINO
 
 #pragma once
 
@@ -53,4 +54,7 @@ public:
     void dog();
     void dartboard();
     void panda();
+    void strip();
 };
+
+#endif

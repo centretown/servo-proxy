@@ -1,4 +1,5 @@
 // Copyright (c) 2021 Dave Marsh. See LICENSE.
+#ifdef ARDUINO
 
 #include "LedWriter.h"
 
@@ -26,3 +27,5 @@ uint8_t LedWriter::gamma8(uint8_t x)
 {
     return Adafruit_NeoPixel::gamma8(x);
 }
+
+#endif

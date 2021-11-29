@@ -1,5 +1,7 @@
 // Copyright (c) 2021 Dave Marsh. See LICENSE.
 
+#ifdef ARDUINO
+
 #pragma once
 
 #include <Arduino.h>
@@ -45,3 +47,4 @@ public:
     virtual void setPixelColor(uint16_t n, uint32_t c);
     virtual void show(uint16_t begin, uint16_t end);
 };
+#endif

@@ -1,5 +1,7 @@
 // Copyright (c) 2021 Dave Marsh. See LICENSE.
 
+#ifdef ARDUINO
+
 #include "TouchSensor.h"
 
 TouchSensor::TouchSensor(uint8_t pin) : pin(pin)
@@ -19,35 +21,23 @@ void TouchSensor::setup()
 
 void TouchSensor::loop()
 {
-    uint64_t now = millis();
     int currentState = digitalRead(pin);
     if (currentState == pinState)
     {
         return;
     }
 
-    int64_t timediff = now - lastChange;
-    if (timediff < threshold)
-    {
-        return;
-    }
-
-    pinState = currentState;
+    uint64_t now = millis();
+    uint64_t timediff = now - lastChange;
     lastChange = now;
+    pinState = currentState;
     if (pinState == HIGH)
     {
         action = TOUCH_PENDING;
         return;
     }
 
-    if (timediff > presshold)
-    {
-        action = TOUCH_HOLD;
-    }
-    else
-    {
-        action = TOUCH_TAP;
-    }
+    action = (timediff > presshold) ? TOUCH_HOLD : TOUCH_TAP;
 }
 
 ActionState TouchSensor::getState()
@@ -59,3 +49,5 @@ ActionState TouchSensor::getState()
     }
     return state;
 }
+
+#endif

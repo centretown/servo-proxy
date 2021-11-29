@@ -1,4 +1,5 @@
 // Copyright (c) 2021 Dave Marsh. See LICENSE.
+#ifdef ARDUINO
 
 #include <Arduino.h>
 #include <MicroTerm.h>
@@ -45,13 +46,14 @@ void setup()
   Serial.print("led strip setup: ");
   Serial.print(led.numPixels());
   Serial.println(" pixels defined.");
+  initLedMenu();
 #endif
 
 #if defined(USE_SERVO_LIB)
   servoServe.setup();
   Serial.println("servo setup");
-  servoServe.start();
   Serial1.flush();
+  initServoMenu();
 #endif
 
 #if defined(USE_OLED_LIB)
@@ -72,89 +74,11 @@ void setup()
 #endif
 
   usrTerm.setup(".usr");
+  Menu::Start();
 }
 
 void processError(int err);
 void processBuffer(const char *buf);
-
-////////////////////////////////////////////
-#if defined(USE_TOUCH_LIB)
-uint8_t pic = 0;
-bool blinking = false;
-
-#if defined(USE_OLED_LIB)
-void touchTap()
-{
-  pic++;
-  if (pic > 2)
-  {
-    pic = 0;
-  }
-  switch (pic)
-  {
-  case 0:
-    oled.dartboard();
-    break;
-  case 1:
-    oled.dog();
-    break;
-  case 2:
-    oled.panda();
-    break;
-  }
-}
-#elif defined(USE_LEDSTRIP_LIB)
-void touchTap()
-{
-}
-#else
-void touchTap()
-{
-}
-#endif
-////////////
-
-////////////
-#if defined(USE_LEDSTRIP_LIB)
-void touchHold()
-{
-  unsigned parms[1] = {0};
-  if (blinking)
-  {
-    segs[2].start(1, parms, 1);
-    blinking = false;
-  }
-  else
-  {
-    segs[2].start(8, parms, 1);
-    blinking = true;
-  }
-}
-#elif defined(USE_LEDSTRIP_LIB)
-void touchHold()
-{
-}
-#else
-void touchHold()
-{
-}
-#endif
-////////////
-
-void touchMenu()
-{
-  ActionState state = touch.getState();
-  if (state == TOUCH_TAP)
-  {
-    touchTap();
-  }
-  else if (state == TOUCH_HOLD)
-  {
-    touchHold();
-  }
-}
-#endif
-////////////////////////////////////////////
 
 void loop()
 {
@@ -255,3 +179,4 @@ void processError(int err)
     return;
   }
 }
+#endif

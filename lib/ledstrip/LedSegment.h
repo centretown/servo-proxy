@@ -1,4 +1,5 @@
 // Copyright (c) 2021 Dave Marsh. See LICENSE.
+#ifdef ARDUINO
 
 #pragma once
 
@@ -71,3 +72,5 @@ public:
     void theaterChase();
     void theaterChaseRainbow();
 };
+
+#endif

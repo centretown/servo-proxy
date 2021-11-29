@@ -1,5 +1,6 @@
 // Copyright (c) 2021 Dave Marsh. See LICENSE.
 
+#ifdef ARDUINO
 #pragma once
 
 #include <Arduino.h>
@@ -51,7 +52,8 @@ public:
 
     void setup();
     void loop();
-    void start();
+    int start(uint8_t index, uint8_t command, uint8_t angle, uint8_t speed, uint8_t type);
     void test(int angle);
     int process(const char *buf);
 };
+#endif

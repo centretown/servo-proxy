@@ -1,5 +1,7 @@
 // Copyright (c) 2021 Dave Marsh. See LICENSE.
 
+#ifdef ARDUINO
+
 #include "LedSegment.h"
 
 LedSegment::LedSegment(uint16_t b, uint16_t e)
@@ -306,3 +308,5 @@ uint32_t LedSegment::wheel(byte pos)
     pos -= 170;
     return ledWriter->Color(pos * 3, 255 - pos * 3, 0);
 }
+
+#endif

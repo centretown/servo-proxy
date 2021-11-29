@@ -10,6 +10,42 @@
 
 #define USE_TOUCH_LIB
 
+#include "Menu.h"
+
+void show(Menu *menu)
+{
+    if (menu == NULL)
+    {
+        Serial.println("null");
+        return;
+    }
+    uint8_t index = menu->Index();
+    if (index != UNSELECTED)
+    {
+        menu = menu->nodes[index];
+        Serial.println(menu->Label());
+    }
+}
+
+void endPoint(Menu *menu)
+{
+    char buf[80];
+    snprintf(buf, sizeof(buf), "endPoint <%s i=%u l=%u c=%u>",
+             menu->Label(), menu->Index(), menu->Level(), menu->Count());
+    // printf("%s\n", buf);
+    Serial.println(buf);
+    uint8_t level = menu->Level();
+
+    for (uint8_t i = 0; i < level; i++)
+    {
+        menu = menu->Ancestor(i);
+        snprintf(buf, sizeof(buf), "endPoint <%s i=%u l=%u c=%u>",
+                 menu->Label(), menu->Index(), menu->Level(), menu->Count());
+        Serial.println(buf);
+        // printf("%s\n", buf);
+    }
+}
+
 //////////////////////////////
 #if defined(USE_SERVO_LIB)
 #include "ServoServe.h"
@@ -39,6 +75,45 @@ int8_t expanderPins[] = {2, 3, 5, 6};
 ServoServe servoServe(pServos, expanderPins,
                       sizeof(expanderPins) / sizeof(expanderPins)[0]);
 
+// menu items
+Menu servoMenu("Servos");
+uint8_t servoPos = 0;
+uint8_t angle = 0;
+uint8_t speed = 100;
+uint8_t type = 180;
+
+void servoEndPoint(Menu *menu)
+{
+    uint8_t command = menu->Ancestor(1)->Index() + 1;
+    uint8_t index = menu->Ancestor(2)->Index();
+    char buf[80];
+    snprintf(buf, sizeof(buf), "led <%s i=%u %u %u %u %u>",
+             menu->Label(), index, command, angle, speed, type);
+    Serial.println(buf);
+    angle = (angle == 180) ? 0 : 180;
+    type = (type == 0) ? 180 : 0;
+    // speed = 100;
+    servoServe.start(index, command, angle, speed, type);
+}
+
+void initServoMenu()
+{
+    char title[16];
+    rootMenu.Add(&servoMenu);
+    for (unsigned servoNum = 0; servoNum < 4; servoNum++)
+    {
+        snprintf(title, sizeof(title), "Servo-%u", servoNum + 1);
+        Menu *sub = servoMenu.Add(new Menu(title));
+        sub->Add(new Menu("Home", servoEndPoint));
+        sub->Add(new Menu("Move", servoEndPoint));
+        sub->Add(new Menu("Ease", servoEndPoint));
+        sub->Add(new Menu("Test", servoEndPoint));
+        sub->Add(new Menu("Stop", servoEndPoint));
+        sub->Add(new Menu("Exit"));
+    }
+    servoMenu.Add(new Menu("Exit"));
+}
+
 #endif
 //////////////////////////////
 
@@ -56,6 +131,22 @@ ServoServe servoServe(pServos, expanderPins,
 #define SCREEN_ADDRESS 0x3C // 0x3D for 128x64, 0x3C for 128x32
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 OledDisplay oled(display, SCREEN_ADDRESS);
+uint8_t pic = 0;
+bool blinking = false;
+void oledShow(Menu *menu)
+{
+    if (menu == NULL)
+    {
+        oled.drawText("null");
+        return;
+    }
+    uint8_t index = menu->Index();
+    if (index != UNSELECTED)
+    {
+        menu = menu->nodes[index];
+        oled.drawText(menu->Label());
+    }
+}
 #endif
 //////////////////////////////
 
@@ -77,11 +168,11 @@ Adafruit_NeoPixel strip8(8, LEDSTRIP_PIN13, NEO_GRB + NEO_KHZ800);
 
 // Adafruit_NeoPixel strip16 = Adafruit_NeoPixel(7, LEDSTRIP_PIN16, NEO_BRG + NEO_KHZ800);
 LedSegment segs[] = {
-    LedSegment(0, 30),  //0
-    LedSegment(0, 3),   //3
-    LedSegment(5, 11),  //4
-    LedSegment(12, 30), //1
-    LedSegment(12, 30), //2
+    LedSegment(0, 3),   //0 4 led indicators
+    LedSegment(4, 30),  //1 8+19
+    LedSegment(4, 11),  //2 8
+    LedSegment(12, 30), //3 19 a
+    LedSegment(12, 30), //4 19 b
 };
 
 Adafruit_NeoPixel *strips[] = {
@@ -93,6 +184,41 @@ Adafruit_NeoPixel *strips[] = {
 LedStrips led(strips, sizeof(strips) / sizeof(strips[0]),
               segs, sizeof(segs) / sizeof(segs[0]));
 
+Menu ledMenu("LED'S");
+
+void ledEndPoint(Menu *menu)
+{
+    uint8_t command = menu->Ancestor(1)->Index() + 1;
+    uint8_t index = menu->Ancestor(2)->Index() + 1;
+    char buf[80];
+    snprintf(buf, sizeof(buf), "led <%s i=%u %u>",
+             menu->Label(), index, command);
+    Serial.println(buf);
+    unsigned parms[4] = {127, 100, 35, 50};
+    segs[index].start(command, parms, sizeof(parms));
+}
+
+void initLedMenu()
+{
+    char title[16];
+    rootMenu.Add(&ledMenu);
+    for (unsigned servoNum = 0; servoNum < 4; servoNum++)
+    {
+        snprintf(title, sizeof(title), "LED-%u", servoNum + 1);
+        Menu *sub = ledMenu.Add(new Menu(title));
+        sub->Add(new Menu("Reset", ledEndPoint));
+        sub->Add(new Menu("Solid", ledEndPoint));
+        sub->Add(new Menu("Blink", ledEndPoint));
+        sub->Add(new Menu("Wipe", ledEndPoint));
+        sub->Add(new Menu("Rainbow", ledEndPoint));
+        sub->Add(new Menu("Cycle", ledEndPoint));
+        sub->Add(new Menu("Chase", ledEndPoint));
+        sub->Add(new Menu("Chase 2", ledEndPoint));
+        sub->Add(new Menu("Exit"));
+    }
+    ledMenu.Add(new Menu("Exit"));
+}
+
 #endif
 //////////////////////////////
 
@@ -100,8 +226,33 @@ LedStrips led(strips, sizeof(strips) / sizeof(strips[0]),
 #if defined(USE_TOUCH_LIB)
 #include "TouchSensor.h"
 
-#define SENSOR_PIN 44
-TouchSensor touch(SENSOR_PIN);
+#define TOUCH_SENSOR_PIN 44
+TouchSensor touch(TOUCH_SENSOR_PIN);
+
+void touchMenu()
+{
+    ActionState state = touch.getState();
+    if (state == TOUCH_TAP)
+    {
+        // Serial.println("next");
+        Menu::Next();
+    }
+    else if (state == TOUCH_HOLD)
+    {
+        // Serial.println("select");
+        Menu::Select();
+    }
+    else
+    {
+        return;
+    }
+    Menu *menu = Menu::Current();
+
+#if defined(USE_OLED_LIB)
+    oledShow(menu);
+#endif
+    show(menu);
+}
 
 #endif
 //////////////////////////////

@@ -1,5 +1,7 @@
 // Copyright (c) 2021 Dave Marsh. See LICENSE.
 
+#ifdef ARDUINO
+
 #pragma once
 
 #include <Arduino.h>
@@ -20,8 +22,8 @@ private:
     int pinState = LOW;
     uint64_t lastChange = 0L;
     ActionState action = TOUCH_NOP;
-    uint16_t threshold = 400;//ms
-    uint16_t presshold = 700;//ms
+    uint16_t threshold = 0; //ms
+    uint16_t presshold = 500; //ms
 
 public:
     TouchSensor(uint8_t pin);
@@ -31,3 +33,5 @@ public:
     void loop();
     ActionState getState();
 };
+
+#endif
