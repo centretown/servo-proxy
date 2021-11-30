@@ -73,6 +73,11 @@ void setup()
   Serial.println("Touch Sensor OK!");
 #endif
 
+#if defined(USE_ROTARY_LIB)
+  rotary.setup();
+  Serial.println("Rotary Switch Setup!");
+#endif
+
   usrTerm.setup(".usr");
   Menu::Start();
 }
@@ -85,6 +90,11 @@ void loop()
 #if defined(USE_TOUCH_LIB)
   touch.loop();
   touchMenu();
+#endif
+
+#if defined(USE_ROTARY_LIB)
+  rotary.loop();
+  rotaryMenu();
 #endif
 
 #if defined(USE_SERVO_LIB)

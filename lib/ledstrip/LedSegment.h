@@ -23,6 +23,15 @@ enum LedCommand
 
 typedef struct
 {
+    uint8_t red = 127;
+    uint8_t green = 127;
+    uint8_t blue = 127;
+    uint16_t wait = 50;       // milli-sec
+    uint32_t duration = 1000; // milli-sec, 0 forever
+} led_settings;
+
+typedef struct
+{
     uint16_t count = 0;
     uint16_t max = 0;
 } led_index;
@@ -37,9 +46,6 @@ typedef struct
     led_index indeces[4];
 } led_cmd_t;
 
-class LedSegment;
-typedef void (LedSegment::*LedFunc)() const;
-
 class LedSegment
 {
 public:
@@ -53,6 +59,7 @@ private:
     uint16_t count = 0;
     uint16_t theatreInc = 3;
     led_cmd_t cmd;
+    led_settings settings;
     bool nextStep();
     void setupCmd();
 

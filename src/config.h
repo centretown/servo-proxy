@@ -6,6 +6,8 @@
 
 #define USE_LEDSTRIP_LIB
 
+#define USE_ROTARY_LIB
+
 // #define USE_OLED_LIB
 
 // #define USE_TOUCH_LIB
@@ -22,8 +24,10 @@ void show(Menu *menu)
     uint8_t index = menu->Index();
     if (index != UNSELECTED)
     {
-        menu = menu->nodes[index];
-        Serial.println(menu->Label());
+        Menu *node = menu->nodes[index];
+        Serial.print(menu->Label());
+        Serial.print(": ");
+        Serial.println(node->Label());
     }
 }
 
@@ -143,9 +147,9 @@ void oledShow(Menu *menu)
     uint8_t index = menu->Index();
     if (index != UNSELECTED)
     {
-        IconID id = (Menu::Root()->Index() == 0) ? ICON_LEDSTRIP : ICON_GEARS;
-        menu = menu->nodes[index];
-        oled.drawMenu(menu->Label(), id);
+        // IconID id = (Menu::Root()->Index() == 0) ? ICON_LEDSTRIP : ICON_GEARS;
+        Menu *node = menu->nodes[index];
+        oled.drawMenu(menu->Label(), node->Label());
     }
 }
 #endif
@@ -232,7 +236,7 @@ TouchSensor touch(TOUCH_SENSOR_PIN);
 
 void touchMenu()
 {
-    ActionState state = touch.getState();
+    TouchState state = touch.GetState();
     if (state == TOUCH_TAP)
     {
         // Serial.println("next");
@@ -258,3 +262,47 @@ void touchMenu()
 
 #endif
 //////////////////////////////
+
+//////////////////////////////
+#if defined(USE_ROTARY_LIB)
+#include "Rotary.h"
+
+#define ROTARY_CLOCK 21
+#define ROTARY_DATA 20
+#define ROTARY_BUTTON 44
+
+Rotary rotary(ROTARY_CLOCK, ROTARY_DATA, ROTARY_BUTTON);
+
+void rotaryMenu()
+{
+    RotaryState state = rotary.GetState();
+    if (state == ROTARY_NOP)
+    {
+        return;
+    }
+
+    if (state == ROTARY_COUNTER_CLOCKWISE)
+    {
+        Menu::Previous();
+    }
+    else if (state == ROTARY_CLOCKWISE)
+    {
+        Menu::Next();
+    }
+    else if (state == ROTARY_CLICK)
+    {
+        Menu::Select();
+    }
+    else
+    {
+        return;
+    }
+
+    Menu *menu = Menu::Current();
+#if defined(USE_OLED_LIB)
+    oledShow(menu);
+#else
+    show(menu);
+#endif
+}
+#endif

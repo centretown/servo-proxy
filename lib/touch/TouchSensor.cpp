@@ -40,9 +40,9 @@ void TouchSensor::loop()
     action = (timediff > presshold) ? TOUCH_HOLD : TOUCH_TAP;
 }
 
-ActionState TouchSensor::getState()
+TouchState TouchSensor::GetState()
 {
-    ActionState state = action;
+    TouchState state = action;
     if (state > TOUCH_PENDING)
     {
         action = TOUCH_NOP;

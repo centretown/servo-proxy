@@ -6,7 +6,7 @@
 
 #include <Arduino.h>
 
-enum ActionState
+enum TouchState
 {
     TOUCH_NOP,     // nothing happening
     TOUCH_PENDING, // something happening
@@ -21,7 +21,7 @@ private:
     uint8_t pin = 44;
     int pinState = LOW;
     uint64_t lastChange = 0L;
-    ActionState action = TOUCH_NOP;
+    TouchState action = TOUCH_NOP;
     uint16_t threshold = 0; //ms
     uint16_t presshold = 500; //ms
 
@@ -31,7 +31,7 @@ public:
 
     void setup();
     void loop();
-    ActionState getState();
+    TouchState GetState();
 };
 
 #endif

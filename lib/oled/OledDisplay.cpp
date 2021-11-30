@@ -96,9 +96,23 @@ void OledDisplay::drawText(const char *text, uint8_t x, uint8_t y, uint8_t size,
     display.display();
 }
 
+void OledDisplay::drawMenu(const char *heading, const char *label)
+{
+    display.clearDisplay();
+    display.setTextColor(SSD1306_WHITE);
+    
+    display.setTextSize(1);
+    display.setCursor(2, 1);
+    display.println(heading);
+
+    display.setTextSize(2);
+    display.setCursor(10, 10);
+    display.println(label);
+
+}
+
 void OledDisplay::drawMenu(const char *text, IconID id)
 {
-
     display.clearDisplay();
     drawIcon(id, 32, 0);
     display.setTextSize(2);

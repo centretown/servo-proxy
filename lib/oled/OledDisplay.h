@@ -67,6 +67,7 @@ public:
     void panda() { drawIcon(ICON_PANDA, 0, 0); }
     void strip() { drawIcon(ICON_LEDSTRIP, 0, 0); }
     void drawIcon(IconID, int16_t, int16_t);
+    void drawMenu(const char *, const char *);
     void drawMenu(const char *, IconID);
 };
 
