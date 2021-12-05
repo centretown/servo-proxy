@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <MicroTerm.h>
 #include "CameraListener.h"
-#include "localerror.h"
+#include "shared.h"
 #include "config.h"
 
 // for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
@@ -43,43 +43,46 @@ void setup()
 
 #if defined(USE_LEDSTRIP_LIB)
   led.setup();
-  Serial.print("led strip setup: ");
-  Serial.print(led.numPixels());
-  Serial.println(" pixels defined.");
   initLedMenu();
+  Serial.print(F("led strip setup: "));
+  Serial.print(led.numPixels());
+  Serial.println(F(" pixels defined."));
 #endif
 
 #if defined(USE_SERVO_LIB)
   servoServe.setup();
-  Serial.println("servo setup");
-  Serial1.flush();
   initServoMenu();
+  Serial.println(F("servo setup"));
+  Serial.println(F("servo menu setup"));
 #endif
 
 #if defined(USE_OLED_LIB)
   oled.setup();
   if (oled.isActive())
   {
-    Serial.println("OLED OK!");
+    Serial.println(F("OLED OK!"));
   }
   else
   {
-    Serial.println("OLED FAILED!");
+    Serial.println(F("OLED FAILED!"));
   }
 #endif
 
 #if defined(USE_TOUCH_LIB)
   touch.setup();
-  Serial.println("Touch Sensor OK!");
+  Serial.println(F("Touch Sensor OK!"));
 #endif
 
 #if defined(USE_ROTARY_LIB)
   rotary.setup();
-  Serial.println("Rotary Switch Setup!");
+  Serial.println(F("Rotary Switch Setup!"));
 #endif
 
   usrTerm.setup(".usr");
   Menu::Start();
+
+  Serial1.flush();
+  printFree();
 }
 
 void processError(int err);
@@ -176,16 +179,16 @@ void processError(int err)
   switch (err)
   {
   case ERR_NOT_ENOUGH_ARGS:
-    usrTerm.println(F("ERR_NOT_ENOUGH_ARGS"));
+    usrTerm.println(F("not enough arguments"));
     return;
   case ERR_NOT_FOUND:
-    usrTerm.println(F("ERR_NOT_FOUND"));
+    usrTerm.println(F("command not found"));
     return;
   case ERR_INDEX:
-    usrTerm.println(F("ERR_INDEX"));
+    usrTerm.println(F("index out of range"));
     return;
   case ERR_BAD_VALUE:
-    usrTerm.println(F("ERR_BAD_VALUE"));
+    usrTerm.println(F("invalid value"));
     return;
   }
 }

@@ -106,9 +106,9 @@ void OledDisplay::drawMenu(const char *heading, const char *label)
     display.println(heading);
 
     display.setTextSize(2);
-    display.setCursor(10, 10);
+    display.setCursor(2, 14);
     display.println(label);
-
+    display.display();
 }
 
 void OledDisplay::drawMenu(const char *text, IconID id)

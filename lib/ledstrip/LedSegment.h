@@ -1,4 +1,5 @@
 // Copyright (c) 2021 Dave Marsh. See LICENSE.
+
 #ifdef ARDUINO
 
 #pragma once
@@ -10,15 +11,15 @@
 enum LedCommand
 {
     STRIP_NOP,         // 0-do nothing quickly
+    STRIP_SOLID,       // 2-solid light
+    STRIP_BLINK,       // 3-blink
+    STRIP_WIPE,        // 4-light sequentially
+    STRIP_CYCLE,       // 5-cycle thru colors
+    STRIP_RAINBOW,     // 6-visible spectrum across
+    STRIP_CHASE,       // 7-every 3rd light on and off
+    STRIP_CHASE_CYCLE, // 8-chase combined with cycle
     STRIP_RESET,       // 1-reset to blank
-    STRIP_SOLID,       // 2
-    STRIP_BLINK,       // 3
-    STRIP_WIPE,        // 4
-    STRIP_CYCLE,       // 5
-    STRIP_RAINBOW,     // 6
-    STRIP_CHASE,       // 7
-    STRIP_CHASE_CYCLE, // 8
-    STRIP_LAST
+    STRIP_OUT_OF_BOUNDS
 };
 
 typedef struct
@@ -27,7 +28,7 @@ typedef struct
     uint8_t green = 127;
     uint8_t blue = 127;
     uint16_t wait = 50;       // milli-sec
-    uint32_t duration = 1000; // milli-sec, 0 forever
+    uint16_t duration = 1000; // milli-sec, 0 forever
 } led_settings;
 
 typedef struct
@@ -57,7 +58,7 @@ private:
     LedWriter *ledWriter;
     // Adafruit_NeoPixel *strip;
     uint16_t count = 0;
-    uint16_t theatreInc = 3;
+    uint8_t theatreInc = 3;
     led_cmd_t cmd;
     led_settings settings;
     bool nextStep();

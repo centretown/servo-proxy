@@ -95,9 +95,14 @@ int LedStrips::process(const char *buf)
     return ERR_STRIP_NOT_ENOUGH_ARGS;
   }
 
-  if (segment >= nSegments)
+  if (command >= STRIP_OUT_OF_BOUNDS)
   {
     return ERR_STRIP_NOT_FOUND;
+  }
+
+  if (segment >= nSegments)
+  {
+    return ERR_STRIP_INDEX;
   }
   segments[segment].start(command, parms, nitems - 2);
   return ERR_STRIP_OK;

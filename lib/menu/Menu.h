@@ -17,42 +17,60 @@
 
 #endif
 
-#define MAX_NODES 12
-#define MAX_LEVELS 6
+#include "Stack.h"
+
+// #define MAX_NODES 12
+#define MAX_LEVELS 12
 #define UNSELECTED 0xff
+#define UNSEQUENCED 0xff
+#define ROUTESIZE 64
 
 class Menu
 {
 private:
-    char label[16] = {0};
+    const char *label;
+    uint8_t length = 0; //number of nodes allocated
+    uint8_t range = 0;  //number indeces filled by this node
+    uint8_t level = 0;  //menu depth
+    uint8_t limit = 0;  //number of indeces added
+    uint8_t count = 0;  //number of nodes added
+    uint8_t index = 0;  //current
+    uint8_t sequence = 0;  //current
     void (*endpoint)(Menu *) = NULL;
+    Menu **nodes = NULL;
 
-    uint8_t level = 0;
-    uint8_t count = 0;
-    uint8_t index = 0;
+    static char route[ROUTESIZE];
+    static Stack<Menu> stack;
 
 public:
     Menu(const char *label, void (*endpoint)(Menu *) = NULL);
+    Menu(const char *label, uint8_t length);
+    Menu(const char *label, uint8_t length, uint8_t range);
     ~Menu();
 
     Menu *Add(Menu *item);
-    static Menu *stack[MAX_LEVELS];
-    static uint8_t stackPtr;
-    static void push(Menu *);
-    static void pop();
 
+    static const char *Path();
     static Menu *Current();
     static Menu *Ancestor(uint8_t gen);
-    static Menu *Root();
+    static Menu *Root(uint8_t gen = 0);
+
     static void Select();
     static void Next();
     static void Previous();
     static void Start();
 
-    const char *Label() { return label; }
+    const char *Label();
     uint8_t Index() { return index; }
     uint8_t Level() { return level; }
     uint8_t Count() { return count; }
+    uint8_t Length() { return length; }
+    uint8_t Sequence() { return sequence; }
+
+    // Menu *Node(uint8_t i) { return nodes[i]; }
+    Menu *Selection();
+
+    uint8_t Range() { return range; }
     void EndPoint()
     {
         if (endpoint != NULL)
@@ -60,8 +78,15 @@ public:
             endpoint(this);
         }
     }
-
-    Menu *nodes[MAX_NODES] = {NULL};
 };
 
 extern Menu rootMenu;
+
+void addExit(Menu *menu);
+void addEndpoints(Menu *menu,
+                  const char *text[], size_t textCount,
+                  void (*endpoint)(Menu *));
+void addMenus(Menu *menu,
+              const char *text[], size_t textCount,
+              size_t length,
+              void (*endpoint)(Menu *));

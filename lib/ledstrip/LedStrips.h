@@ -9,11 +9,19 @@
 #include "LedWriter.h"
 #include "LedSegment.h"
 
+#if defined(SHARED_ERROR)
+#define ERR_STRIP_OK ERR_OK
+#define ERR_STRIP_NOT_ENOUGH_ARGS ERR_NOT_ENOUGH_ARGS
+#define ERR_STRIP_NOT_FOUND ERR_NOT_FOUND
+#define ERR_STRIP_INDEX ERR_INDEX
+#define ERR_STRIP_BAD_VALUE ERR_BAD_VALUE
+#else
 #define ERR_STRIP_OK 0
 #define ERR_STRIP_NOT_ENOUGH_ARGS 1
 #define ERR_STRIP_NOT_FOUND 2
 #define ERR_STRIP_INDEX 3
 #define ERR_STRIP_BAD_VALUE 4
+#endif
 
 #define NO_BORDER 0
 

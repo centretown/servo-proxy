@@ -2,77 +2,47 @@
 
 #include "Menu.h"
 
-Menu rootMenu("root");
+Stack<Menu> Menu::stack(MAX_LEVELS);
+Menu *Menu::Current() { return stack.Current(); }
+Menu *Menu::Ancestor(uint8_t gen) { return stack.Ancestor(gen); }
+Menu *Menu::Root(uint8_t gen) { return stack.Root(gen); }
 
-Menu *Menu::Root() {
-    return &rootMenu;
-}
+Menu rootMenu("", 4);
+char Menu::route[ROUTESIZE] = {0};
 
-Menu *Menu::stack[MAX_LEVELS] = {NULL};
-uint8_t Menu::stackPtr = 0;
-
-void Menu::push(Menu *m)
+const char *Menu::Path()
 {
-    if (stackPtr >= MAX_LEVELS - 1)
+    route[0] = 0;
+    uint8_t stackPtr = stack.StackPtr();
+    for (uint8_t i = 0; i < stackPtr; i++)
     {
-        // printf("MAX_EXCEEDED\n");
-        return;
-    }
-    stack[stackPtr] = m;
-    stackPtr++;
-}
-
-void Menu::pop()
-{
-    // printf("POP\n");
-    if (stackPtr > 0)
-    {
-        --stackPtr;
-    }
-}
-
-Menu *Menu::Current()
-{
-    uint8_t i = (stackPtr > 0) ? stackPtr - 1 : 0;
-    // printf("C=%u\n", i);
-    // Menu *m = stack[i];
-    // if (m == NULL)
-    // {
-    //     printf("CURRENT MENU NULL");
-    // }
-    return stack[i];
-}
-
-Menu *Menu::Ancestor(uint8_t gen)
-{
-    if (stackPtr >= gen)
-    {
-        return stack[stackPtr - gen];
-    }
-    return stack[0];
+        Menu *m = Root(i);
+        strcat(route, m->Label());
+        strcat(route, "/");
+    };
+    return route;
 }
 
 void Menu::Start()
 {
-    push(&rootMenu);
+    stack.Push(&rootMenu);
 }
 
 void Menu::Next()
 {
     Menu *menu = Current();
     menu->index++;
-    if (menu->index >= menu->count)
+    if (menu->index >= menu->limit)
     {
         menu->index = 0;
     }
 }
-
 void Menu::Previous()
 {
-    Menu *menu = Current();
+    Menu *menu = stack.Current();
     if (menu->index == 0)
     {
-        menu->index = menu->count - 1;
+        menu->index = menu->limit - 1;
         return;
     }
     menu->index--;
@@ -80,58 +50,117 @@ void Menu::Previous()
 
 void Menu::Select()
 {
-    // printf("SELECTing...\n");
     Menu *menu = Current();
     if (menu == NULL)
     {
-        // printf("SELECT NULL MENU\n");
         return;
     }
 
-    menu = menu->nodes[menu->index];
-    if (menu == NULL)
+    Menu *node = menu->Selection();
+    if (node->endpoint != NULL)
     {
-        pop();
+        node->endpoint(node);
         return;
     }
 
-    if (menu->endpoint != NULL)
+    if (node->Count() > 0)
     {
-        // printf("endpoint\n");
-        menu->endpoint(menu);
-        return;
-    }
-
-    if (menu->Count() > 0)
-    {
-        push(menu);
+        stack.Push(node);
     }
     else //exit
     {
-        // printf("POPPING...\n");
-        pop();
+        menu->Next();
+        stack.Pop();
     }
 }
 
-Menu::Menu(const char *text, void (*func)(Menu *))
+Menu::Menu(const char *label,
+           void (*func)(Menu *)) : label(label), length(0), range(1)
 {
-    strncpy(label, text, sizeof(label));
     endpoint = func;
+}
+
+Menu::Menu(const char *label,
+           uint8_t length) : label(label), length(length), range(1)
+{
+    if (length > 0)
+    {
+        nodes = (Menu **)malloc(sizeof(Menu *) * length);
+    }
+    else
+    {
+        range = 0;
+    }
+}
+
+Menu::Menu(const char *label,
+           uint8_t length,
+           uint8_t range) : label(label), length(length), range(range)
+{
+    if (length > 0)
+    {
+        nodes = (Menu **)malloc(sizeof(Menu *) * length);
+    }
 }
 
 Menu::~Menu()
 {
+    if (nodes != NULL)
+    {
+        free(nodes);
+    }
+}
+
+const char *Menu::Label()
+{
+    static char buf[16];
+    if (range < 2)
+    {
+        return label;
+    }
+    snprintf(buf, sizeof(buf), "%s-%u", label, sequence);
+    return buf;
 }
 
 Menu *Menu::Add(Menu *item)
 {
-    if (count < MAX_NODES &&
-        (level < MAX_LEVELS || level == UNSELECTED))
+    uint8_t newLevel = level + 1;
+    if (count < length && newLevel < MAX_LEVELS)
     {
-        item->level = level + 1;
+        item->level = newLevel;
         nodes[count] = item;
         count++;
+        limit += item->range;
     }
 
     return item;
+}
+
+Menu *Menu::Selection()
+{
+    if (count == 0)
+    {
+        return this;
+    }
+
+    // if (count == limit)
+    // {
+    //     return nodes[index];
+    // }
+
+    Menu *node;
+    uint8_t j = 0;
+    uint8_t i = 0;
+    for (uint8_t n = 0; n < length; n++)
+    {
+        node = nodes[n];
+        j = index - i;
+        i += node->range;
+        if (index < i)
+        {
+            node->sequence = j;
+            return node;
+        }
+    }
+    return this;
 }

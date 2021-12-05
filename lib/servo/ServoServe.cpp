@@ -116,7 +116,7 @@ int ServoServe::process(const char *cmd)
         return ERR_SERVO_NOT_ENOUGH_ARGS;
     }
 
-    if (command < SERVO_FIRST || command > SERVO_LAST)
+    if (command >= SERVO_OUT_OF_BOUNDS)
     {
         return ERR_SERVO_NOT_FOUND;
     }
@@ -150,6 +150,8 @@ void ServoServe::loop()
             cmd->fresh = 0;
             switch (cmd->command)
             {
+            case SERVO_NOP:
+                break;
             case SERVO_HOME:
                 ps->write(0);
                 break;
@@ -168,6 +170,7 @@ void ServoServe::loop()
                 cmd->fresh = 1;
                 break;
             case SERVO_STOP:
+                cmd->command = SERVO_NOP;
                 break;
             }
             return;

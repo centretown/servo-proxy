@@ -6,19 +6,30 @@
 #include <Arduino.h>
 #include <ServoEasing.h>
 
-#define SERVO_FIRST 1
-#define SERVO_HOME 1
-#define SERVO_MOVE 2
-#define SERVO_EASE 3
-#define SERVO_TEST 4
-#define SERVO_STOP 5
-#define SERVO_LAST 5
-
+#if defined(SHARED_ERROR)
+#define ERR_SERVO_OK ERR_OK
+#define ERR_SERVO_NOT_ENOUGH_ARGS ERR_NOT_ENOUGH_ARGS
+#define ERR_SERVO_NOT_FOUND ERR_NOT_FOUND
+#define ERR_SERVO_INDEX ERR_INDEX
+#define ERR_SERVO_BAD_VALUE ERR_BAD_VALUE
+#else
 #define ERR_SERVO_OK 0
 #define ERR_SERVO_NOT_ENOUGH_ARGS 1
 #define ERR_SERVO_NOT_FOUND 2
 #define ERR_SERVO_INDEX 3
 #define ERR_SERVO_BAD_VALUE 4
+#endif
+
+enum ServoCommand
+{
+    SERVO_NOP,  // 0-do nothing quickly
+    SERVO_HOME, // 2-hardware home
+    SERVO_MOVE, // 3-move at fixed rate
+    SERVO_EASE, // 4-move at variable rate
+    SERVO_TEST, // 5-continuous test
+    SERVO_STOP, // 1-reset to blank
+    SERVO_OUT_OF_BOUNDS
+};
 
 typedef struct
 {

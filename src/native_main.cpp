@@ -3,96 +3,35 @@
 #ifndef ARDUINO
 #include <stdio.h>
 #include "Menu.h"
+#define USE_SERVO_LIB
+#define USE_LEDSTRIP_LIB
+// #define USE_ROTARY_LIB
 
-Menu servoMenu("Servos");
-Menu ledMenu("LED'S");
-uint8_t servoPos = 0;
-
-void endPoint(Menu *menu)
+void servoParmsEndPoint(Menu *menu)
 {
-    char buf[80];
-    snprintf(buf, sizeof(buf), "endpoint <%s i=%u l=%u c=%u>",
-             menu->Label(), menu->Index(), menu->Level(), menu->Count());
-    printf("%s\n", buf);
-    uint8_t level = menu->Level();
-
-    for (uint8_t i = 0; i < level; i++)
-    {
-        menu = menu->Ancestor(i);
-        snprintf(buf, sizeof(buf), "endpoint <%s i=%u l=%u c=%u>",
-                 menu->Label(), menu->Index(), menu->Level(), menu->Count());
-        printf("%s\n", buf);
-    }
 }
 
-void initServoMenu()
+void servoEndPoint(Menu *menu)
 {
-    char title[16];
-    rootMenu.Add(&servoMenu);
-    for (size_t servoNum = 0; servoNum < 4; servoNum++)
-    {
-        snprintf(title, sizeof(title), "Servo-%lu", servoNum + 1);
-        Menu *sub = servoMenu.Add(new Menu(title));
-        sub->Add(new Menu("Home", endPoint));
-        sub->Add(new Menu("Move", endPoint));
-        sub->Add(new Menu("Ease", endPoint));
-        sub->Add(new Menu("Test", endPoint));
-        sub->Add(new Menu("Stop", endPoint));
-        sub->Add(new Menu("Exit"));
-    }
-    servoMenu.Add(new Menu("Exit"));
-}
-void initLedMenu()
-{
-    char title[16];
-    rootMenu.Add(&ledMenu);
-    for (size_t servoNum = 0; servoNum < 4; servoNum++)
-    {
-        snprintf(title, sizeof(title), "LED-%lu", servoNum + 1);
-        Menu *sub = ledMenu.Add(new Menu(title));
-        sub->Add(new Menu("Clear", endPoint));
-        sub->Add(new Menu("Solid", endPoint));
-        sub->Add(new Menu("Blink", endPoint));
-        sub->Add(new Menu("Rainbow", endPoint));
-        sub->Add(new Menu("Theatre", endPoint));
-        sub->Add(new Menu("Exit"));
-    }
-    ledMenu.Add(new Menu("Exit"));
 }
 
-void displayMenu(Menu *menu)
-{
-    char tabs[32] = {0};
+int8_t expanderPins[] = {2, 3, 5, 6};
 
-    if (menu->Level() != UNSELECTED)
-    {
-        memset(tabs, ' ', 2 * (menu->Level() + 1));
-    }
-    printf("%s%s l=%u c=%u\n", tabs, menu->Label(), menu->Level(), menu->Count());
-    // menu->EndPoint();
-    for (unsigned i = 0; i < menu->Count(); i++)
-    {
-        if (menu->nodes[i] != NULL)
-        {
-            displayMenu(menu->nodes[i]);
-        }
-    }
-}
+#include "config_menus.h"
 
-void show(Menu *menu)
-{
-    if (menu == NULL)
-    {
-        printf("null\n");
-        return;
-    }
-    uint8_t index = menu->Index();
-    if (index != UNSELECTED)
-    {
-        menu = menu->nodes[index];
-        printf("%s\n", menu->Label());
-    }
-}
+// void displayMenu(Menu *menu)
+// {
+//     printf("%*s%s l=%u c=%u\n",
+//            menu->Level() * 4, " ", menu->Label(), menu->Level(), menu->Count());
+//     // menu->EndPoint();
+//     for (unsigned i = 0; i < menu->Count(); i++)
+//     {
+//         if (menu->Node(i) != NULL)
+//         {
+//             displayMenu(menu->Node(i));
+//         }
+//     }
+// }
 
 int main(int argc, char **argv)
 {
@@ -101,23 +40,23 @@ int main(int argc, char **argv)
     initLedMenu();
 
     Menu::Start();
-    displayMenu(&rootMenu);
-
+    // displayMenu(Menu::Root(0));
+    // show(Menu::Current());
     unsigned option;
     do
     {
         show(Menu::Current());
-        printf("1-next 2-previous 3-select 4-exit\n");
+        printf("1-previous 2-next 3-select 4-exit-> ");
         int count = scanf("%u", &option);
         if (count > 0)
         {
             switch (option)
             {
             case 1:
-                Menu::Next();
+                Menu::Previous();
                 break;
             case 2:
-                Menu::Previous();
+                Menu::Next();
                 break;
             case 3:
                 Menu::Select();
