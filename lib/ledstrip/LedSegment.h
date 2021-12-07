@@ -19,7 +19,8 @@ enum LedCommand
     STRIP_CHASE,       // 7-every 3rd light on and off
     STRIP_CHASE_CYCLE, // 8-chase combined with cycle
     STRIP_RESET,       // 1-reset to blank
-    STRIP_OUT_OF_BOUNDS
+    STRIP_OUT_OF_BOUNDS,
+    STRIP_FIRST = STRIP_SOLID
 };
 
 typedef struct

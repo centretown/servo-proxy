@@ -1,8 +1,8 @@
 // Copyright (c) 2021 Dave Marsh. See LICENSE.
 
 #ifndef ARDUINO
-#include <stdio.h>
 #include "Menu.h"
+
 #define USE_SERVO_LIB
 #define USE_LEDSTRIP_LIB
 // #define USE_ROTARY_LIB
@@ -17,7 +17,7 @@ void servoEndPoint(Menu *menu)
 
 int8_t expanderPins[] = {2, 3, 5, 6};
 
-#include "config_menus.h"
+#include "menus.h"
 
 // void displayMenu(Menu *menu)
 // {
@@ -40,8 +40,6 @@ int main(int argc, char **argv)
     initLedMenu();
 
     Menu::Start();
-    // displayMenu(Menu::Root(0));
-    // show(Menu::Current());
     unsigned option;
     do
     {

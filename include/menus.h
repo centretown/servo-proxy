@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Menu.h"
+
 //////////////////////////////
 #ifdef ARDUINO
 #include "freeMemory.h"
@@ -9,10 +11,13 @@
 void printFree()
 {
 }
+void printMenuParams(Menu *menu)
+{
+    printf("l=%u c=%u i=%u r=%u s=%u\n", menu->Length(), menu->Count(),
+           menu->Index(), menu->Range(), menu->Sequence());
+}
 #endif
 //////////////////////////////
-
-#include "Menu.h"
 
 //////////////////////////////
 #if defined(USE_OLED_LIB)
@@ -25,13 +30,9 @@ void oledShow(Menu *menu)
         oled.drawText("null");
         return;
     }
-    uint8_t index = menu->Index();
-    if (index != UNSELECTED)
-    {
-        // IconID id = (Menu::Root()->Index() == 0) ? ICON_LEDSTRIP : ICON_GEARS;
-        Menu *node = menu->Node(index);
-        oled.drawMenu(menu->Label(), node->Label());
-    }
+    // IconID id = (Menu::Root()->Index() == 0) ? ICON_LEDSTRIP : ICON_GEARS;
+    Menu *node = menu->Selection();
+    oled.drawMenu(menu->Label(), node->Label());
 }
 #endif
 //////////////////////////////
@@ -41,12 +42,13 @@ void show(Menu *menu)
 #if defined(USE_OLED_LIB)
     oledShow(menu);
 #else
-    uint8_t index = menu->Index();
-    Menu *node = menu->Node(index);
+    Menu *node = menu->Selection();
 #if defined(ARDUINO)
     Serial.print(Menu::Path());
     Serial.println(node->Label());
 #else
+    printMenuParams(menu);
+    printMenuParams(node);
     printf("%s%s\n", menu->Path(), node->Label());
 #endif
 #endif
@@ -116,7 +118,7 @@ void servoParmsEndPoint(Menu *menu)
 }
 void servoEndPoint(Menu *menu)
 {
-    uint8_t command = menu->Ancestor(1)->Index();
+    uint8_t command = menu->Ancestor(1)->Index() + SERVO_HOME;
     uint8_t index = menu->Ancestor(2)->Index();
     servoAngle = (servoAngle == 180) ? 0 : 180;
     servoType = (servoType == 0) ? 180 : 0;
@@ -130,35 +132,31 @@ const size_t servoParmsCount = sizeof(servoParmsText) / sizeof(servoParmsText[0]
 void addServoParmsMenu(Menu *menu)
 {
     addEndpoints(menu, servoParmsText, servoParmsCount, servoParmsEndPoint);
+    addExit(menu);
 }
 
 const char *servoSetupText[] = {"Move", "Ease", "Test"};
 const size_t servoSetupLength = sizeof(servoSetupText) / sizeof(servoSetupText[0]);
-const char *servoSubText[] = {"Stop", "Home", "Move", "Ease", "Test"};
+const char *servoSubText[] = {"Home", "Move", "Ease", "Test", "Stop"};
 const size_t servoSubLength = sizeof(servoSubText) / sizeof(servoSubText[0]);
 
 void addServoSubMenu(Menu *menu)
 {
-    uint8_t seq = menu->Count();
+    size_t servoCount = sizeof(expanderPins) / sizeof(expanderPins[0]);
     // add 1 for setup, 1 for exit
-    Menu *sub = menu->Add(new Menu("Servo", servoSubLength + 2, seq));
+    Menu *sub = menu->Add(new Menu("Servo", servoSubLength + 2, (uint8_t)servoCount));
+    addEndpoints(sub, servoSubText, servoSubLength, servoEndPoint);
     Menu *setup = sub->Add(new Menu("Setup", servoSetupLength + 1));
     addMenus(setup, servoSetupText, servoSetupLength, servoParmsCount + 1,
              addServoParmsMenu);
-    addEndpoints(sub, servoSubText, servoSubLength, servoEndPoint);
+    addExit(sub);
 }
 
 void initServoMenu()
 {
-    size_t servoCount = sizeof(expanderPins) / sizeof(expanderPins[0]);
-    // add item for exit
-    Menu *servosMenu = rootMenu.Add(new Menu("Servos", servoCount + 1));
-
-    for (unsigned servoNum = 0; servoNum < servoCount; servoNum++)
-    {
-        addServoSubMenu(servosMenu);
-        printFree();
-    }
+    Menu *servosMenu = rootMenu.Add(new Menu("Servos", 2));
+    addServoSubMenu(servosMenu);
+    printFree();
     addExit(servosMenu);
     printFree();
 }
@@ -175,7 +173,7 @@ void ledParmsEndPoint(Menu *menu)
 }
 void ledEndPoint(Menu *menu)
 {
-    uint8_t command = menu->Ancestor(1)->Index();
+    uint8_t command = menu->Ancestor(1)->Index() + STRIP_SOLID;
     uint8_t index = menu->Ancestor(2)->Index();
     unsigned parms[4] = {127, 100, 35, 50};
     segs[index].start(command, parms, sizeof(parms));
@@ -198,37 +196,34 @@ const size_t ledParmsCount = sizeof(ledParmsText) / sizeof(ledParmsText[0]);
 void addLedParmsMenu(Menu *menu)
 {
     addEndpoints(menu, ledParmsText, ledParmsCount, ledParmsEndPoint);
+    addExit(menu);
 }
 
 const char *ledSetupText[] = {"Solid", "Blink", "Wipe", "Cycle",
                               "Rainbow", "Chase", "CycleChase"};
 const size_t ledSetupLength = sizeof(ledSetupText) / sizeof(ledSetupText[0]);
-const char *ledSubText[] = {"Reset", "Solid", "Blink", "Wipe", "Cycle",
-                            "Rainbow", "Chase", "CycleChase"};
+const char *ledSubText[] = {"Solid", "Blink", "Wipe", "Cycle",
+                            "Rainbow", "Chase", "CycleChase", "Reset"};
 const size_t ledSubLength = sizeof(ledSubText) / sizeof(ledSubText[0]);
 
 void addLedSubMenu(Menu *menu)
 {
-    uint8_t seq = menu->Count();
+    size_t segCount = sizeof(segs) / sizeof(segs[0]);
     // add 1 for setup, 1 for exit
-    Menu *sub = menu->Add(new Menu("Strip", ledSubLength + 2, seq));
+    Menu *sub = menu->Add(new Menu("Strip", ledSubLength + 2, segCount));
+    addEndpoints(sub, ledSubText, ledSubLength, ledEndPoint);
     Menu *setup = sub->Add(new Menu("Setup", ledSetupLength + 1));
     addMenus(setup, ledSetupText, ledSetupLength, ledParmsCount + 1,
              addLedParmsMenu);
-    addEndpoints(sub, ledSubText, ledSubLength, ledEndPoint);
+    addExit(sub);
 }
 
 void initLedMenu()
 {
-    size_t segCount = sizeof(segs) / sizeof(segs[0]);
     // add item for exit
-    Menu *ledMenu = rootMenu.Add(new Menu("LED Strips", segCount + 1));
-    rootMenu.Add(ledMenu);
-    for (unsigned segNum = 0; segNum < segCount; segNum++)
-    {
-        addLedSubMenu(ledMenu);
-        printFree();
-    }
+    Menu *ledMenu = rootMenu.Add(new Menu("LED Strips", 2));
+    addLedSubMenu(ledMenu);
+    printFree();
     addExit(ledMenu);
     printFree();
 }

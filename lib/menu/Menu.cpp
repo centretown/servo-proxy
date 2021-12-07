@@ -138,28 +138,21 @@ Menu *Menu::Add(Menu *item)
 
 Menu *Menu::Selection()
 {
-    if (count == 0)
+    if (count > 0)
     {
-        return this;
-    }
-
-    // if (count == limit)
-    // {
-    //     return nodes[index];
-    // }
-
-    Menu *node;
-    uint8_t j = 0;
-    uint8_t i = 0;
-    for (uint8_t n = 0; n < length; n++)
-    {
-        node = nodes[n];
-        j = index - i;
-        i += node->range;
-        if (index < i)
+        Menu *node;
+        uint8_t j = 0;
+        uint8_t i = 0;
+        for (uint8_t n = 0; n < length; n++)
         {
-            node->sequence = j;
-            return node;
+            node = nodes[n];
+            j = index - i;
+            i += node->range;
+            if (index < i)
+            {
+                node->sequence = j;
+                return node;
+            }
         }
     }
     return this;

@@ -6,6 +6,8 @@
 #include "CameraListener.h"
 #include "shared.h"
 #include "config.h"
+#include "menus.h"
+
 
 // for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
 #if !defined(LED_BUILTIN) && !defined(ESP32)

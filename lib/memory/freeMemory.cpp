@@ -4,9 +4,11 @@
 void printFree()
 {
     Serial.print(F("free memory: "));
-    Serial.println(freeMemory());
+    Serial.print(freeMemory());
+    Serial.print(F(" sizeof ptr: "));
+    Serial.println(sizeof(char*));
 }
-
+ 
 #ifdef __arm__
 // should use uinstd.h to define sbrk but Due causes a conflict
 extern "C" char *sbrk(int incr);

@@ -3,21 +3,13 @@
 #pragma once
 
 #ifdef ARDUINO
-
 #include <Arduino.h>
-
 #else
-
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <malloc.h>
-#include <string.h>
-
+#include "base.h"
 #endif
 
 #include "Stack.h"
+#include "EndPoint.h"
 
 // #define MAX_NODES 12
 #define MAX_LEVELS 12
@@ -37,6 +29,7 @@ private:
     uint8_t index = 0;  //current
     uint8_t sequence = 0;  //current
     void (*endpoint)(Menu *) = NULL;
+    EndPoint *point = NULL;
     Menu **nodes = NULL;
 
     static char route[ROUTESIZE];
@@ -71,13 +64,6 @@ public:
     Menu *Selection();
 
     uint8_t Range() { return range; }
-    void EndPoint()
-    {
-        if (endpoint != NULL)
-        {
-            endpoint(this);
-        }
-    }
 };
 
 extern Menu rootMenu;
