@@ -1,7 +1,25 @@
 // Copyright (c) 2021 Dave Marsh. See LICENSE.
+
 #ifdef ARDUINO
 
 #include "ServoServe.h"
+
+ServoServe::ServoServe(
+    ServoEasing **servos,
+    int8_t *expanderPins,
+    size_t count) : servos(servos),
+                    expanderPins(expanderPins),
+                    count(count)
+{
+    commands = (servo_cmd_t *)malloc(sizeof(servo_cmd_t) * count);
+    // presets = (servo_cmd_t *)malloc(sizeof(servo_cmd_t) * count);
+}
+
+ServoServe::~ServoServe()
+{
+    free(commands);
+    // free(presets);
+}
 
 // const int ServoServe::types[] = {EASE_LINEAR, EASE_QUADRATIC_IN_OUT, EASE_CUBIC_IN_OUT, EASE_QUARTIC_IN_OUT};
 
@@ -137,6 +155,11 @@ int ServoServe::start(uint8_t index, uint8_t command, uint8_t angle, uint8_t spe
     commands[index].type = type;
     commands[index].fresh = 1;
     return ERR_SERVO_OK;
+}
+
+int ServoServe::start(uint8_t index, servo_cmd_t *p)
+{
+    return start(index, p->command, p->angle, p->speed, p->type);
 }
 
 void ServoServe::loop()

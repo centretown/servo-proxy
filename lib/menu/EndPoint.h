@@ -2,11 +2,7 @@
 
 #pragma once
 
-#ifdef ARDUINO
-#include <Arduino.h>
-#else
 #include "base.h"
-#endif
 
 class Menu;
 
@@ -18,6 +14,6 @@ public:
     ~EndPoint() {}
 
     virtual void Setup(Menu *) = 0;
-    virtual void Show(Menu *m) = 0;
+    virtual uint8_t Value(Menu *m) = 0;
     virtual void Exit(Menu *) = 0;
 };

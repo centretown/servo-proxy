@@ -4,9 +4,8 @@
 
 #include "Rotary.h"
 
-Rotary::Rotary(uint8_t c,
-               uint8_t d,
-               uint8_t b) : clockPin(c), dataPin(d), buttonPin(b)
+Rotary::Rotary(RotaryEncoder &enc,
+               uint8_t b) : enc(enc), buttonPin(b)
 {
 }
 
@@ -16,49 +15,40 @@ Rotary::~Rotary()
 
 void Rotary::setup()
 {
-    pinMode(clockPin, INPUT);
-    pinMode(dataPin, INPUT);
     pinMode(buttonPin, INPUT_PULLUP);
-    lastClockState = digitalRead(clockPin);
 }
 
 void Rotary::loop()
 {
     uint64_t now = millis();
-    if (now < lastTime + 1)
+    if (now < lastTime + 2)
     {
         return;
     }
 
-    int clockState = digitalRead(clockPin);
-
-    if (clockState == HIGH && lastClockState == LOW)
+    enc.tick();
+    long newPos = enc.getPosition();
+    if (lastPos > newPos)
     {
-        int dataState = digitalRead(dataPin);
-        if (dataState == clockState)
-        {
-            counter--;
-            state = ROTARY_COUNTER_CLOCKWISE;
-        }
-        else
-        {
-            counter++;
-            state = ROTARY_CLOCKWISE;
-        }
+        state = ROTARY_COUNTER_CLOCKWISE;
+        counter--;
     }
-    lastClockState = clockState;
-
-    if (state == ROTARY_NOP)
+    else if (lastPos < newPos)
+    {
+        state = ROTARY_CLOCKWISE;
+        counter++;
+    }
+    else
     {
         int buttonState = digitalRead(buttonPin);
         if (buttonState == LOW && lastButtonState != LOW)
         {
-            lastButtonClick = now;
             state = ROTARY_CLICK;
         }
         lastButtonState = buttonState;
     }
 
+    lastPos = newPos;
     lastTime = now;
 }
 

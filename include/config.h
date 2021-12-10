@@ -5,7 +5,7 @@
 #define USE_SERVO_LIB
 #define USE_LEDSTRIP_LIB
 #define USE_ROTARY_LIB
-// #define USE_OLED_LIB
+#define USE_OLED_LIB
 // #define USE_TOUCH_LIB
 
 //////////////////////////////
@@ -65,27 +65,30 @@ OledDisplay oled(display, SCREEN_ADDRESS);
 #include <avr/power.h>
 #endif
 
+#define LEDSTRIP_PIN10 10
 #define LEDSTRIP_PIN11 11
 #define LEDSTRIP_PIN12 12
 #define LEDSTRIP_PIN13 13
 
 Adafruit_NeoPixel strip19(19, LEDSTRIP_PIN11, NEO_BRG + NEO_KHZ800);
+Adafruit_NeoPixel strip15(15, LEDSTRIP_PIN10, NEO_BRG + NEO_KHZ800);
 Adafruit_NeoPixel strip4(4, LEDSTRIP_PIN12, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip8(8, LEDSTRIP_PIN13, NEO_GRB + NEO_KHZ800);
 
 // Adafruit_NeoPixel strip16 = Adafruit_NeoPixel(7, LEDSTRIP_PIN16, NEO_BRG + NEO_KHZ800);
 LedSegment segs[] = {
     LedSegment(0, 3),   //0 4 led indicators
-    LedSegment(4, 30),  //1 8+19
+    LedSegment(4, 45),  //1 8+19
     LedSegment(4, 11),  //2 8
     LedSegment(12, 30), //3 19 a
-    LedSegment(12, 30), //4 19 b
+    LedSegment(31, 45), //4 16
 };
 
 Adafruit_NeoPixel *strips[] = {
     &strip4,
     &strip8,
     &strip19,
+    &strip15,
 };
 
 LedStrips led(strips, sizeof(strips) / sizeof(strips[0]),
@@ -103,11 +106,15 @@ TouchSensor touch(TOUCH_SENSOR_PIN);
 
 //////////////////////////////
 #if defined(USE_ROTARY_LIB)
-#include "Rotary.h"
-#define ROTARY_CLOCK 21
-#define ROTARY_DATA 20
-#define ROTARY_BUTTON 44
-Rotary rotary(ROTARY_CLOCK, ROTARY_DATA, ROTARY_BUTTON);
+#include <Rotary.h>
+#define ROTARY_A 15
+#define ROTARY_B 14
+#define ROTARY_BUTTON 34
+RotaryEncoder enc(ROTARY_A, ROTARY_B, RotaryEncoder::LatchMode::TWO03);
+Rotary rotary(enc, ROTARY_BUTTON);
+
+// #define ROTARY_CLOCK 21
+// #define ROTARY_DATA 20
+// Rotary rotary(ROTARY_CLOCK, ROTARY_DATA, ROTARY_BUTTON);
 #endif
 //////////////////////////////
-

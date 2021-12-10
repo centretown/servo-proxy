@@ -2,12 +2,7 @@
 
 #pragma once
 
-#ifdef ARDUINO
-#include <Arduino.h>
-#else
 #include "base.h"
-#endif
-
 #include "Stack.h"
 #include "EndPoint.h"
 
@@ -59,11 +54,10 @@ public:
     uint8_t Count() { return count; }
     uint8_t Length() { return length; }
     uint8_t Sequence() { return sequence; }
+    uint8_t Range() { return range; }
 
     // Menu *Node(uint8_t i) { return nodes[i]; }
     Menu *Selection();
-
-    uint8_t Range() { return range; }
 };
 
 extern Menu rootMenu;

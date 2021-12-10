@@ -35,7 +35,6 @@ int8_t expanderPins[] = {2, 3, 5, 6};
 
 int main(int argc, char **argv)
 {
-
     initServoMenu();
     initLedMenu();
 

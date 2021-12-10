@@ -5,6 +5,7 @@
 
 #include <Arduino.h>
 #include <ServoEasing.h>
+#include "ServoCommand.h"
 
 #if defined(SHARED_ERROR)
 #define ERR_SERVO_OK ERR_OK
@@ -20,50 +21,30 @@
 #define ERR_SERVO_BAD_VALUE 4
 #endif
 
-enum ServoCommand
-{
-    SERVO_NOP,  // 0-do nothing quickly
-    SERVO_HOME, // 2-hardware home
-    SERVO_MOVE, // 3-move at fixed rate
-    SERVO_EASE, // 4-move at variable rate
-    SERVO_TEST, // 5-continuous test
-    SERVO_STOP, // 1-reset to blank
-    SERVO_OUT_OF_BOUNDS
-};
-
-typedef struct
-{
-    uint8_t command = 0;
-    uint8_t angle = 0;
-    uint8_t speed = 45;
-    uint8_t type = 0;
-    uint8_t fresh = 0;
-} servo_cmd_t;
-
 class ServoServe
 {
 private:
     ServoEasing **servos;
-    servo_cmd_t commands[16];
     const int8_t *expanderPins;
     const size_t count;
+
+    servo_cmd_t *commands;
+    servo_cmd_t *presets;
+
     void attach(ServoEasing *servo, int expanderPin);
     bool ready = false;
     uint8_t testAngle = 0;
 
 public:
     ServoServe(
-        ServoEasing **servos,
-        int8_t *expanderPins,
-        size_t count) : servos(servos),
-                        expanderPins(expanderPins),
-                        count(count) {}
+        ServoEasing **servos, int8_t *expanderPins, size_t count);
 
-    ~ServoServe() {}
+    ~ServoServe();
 
     void setup();
     void loop();
     int start(uint8_t index, uint8_t command, uint8_t angle, uint8_t speed, uint8_t type);
+    int start(uint8_t index, servo_cmd_t *p);
     void test(int angle);
     int process(const char *buf);
 };

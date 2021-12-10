@@ -2,9 +2,13 @@
 
 #pragma once
 
+#ifdef ARDUINO
+#include <Arduino.h>
+#else
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <malloc.h>
 #include <string.h>
+#endif

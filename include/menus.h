@@ -41,7 +41,7 @@ void show(Menu *menu)
 {
 #if defined(USE_OLED_LIB)
     oledShow(menu);
-#else
+#endif
     Menu *node = menu->Selection();
 #if defined(ARDUINO)
     Serial.print(Menu::Path());
@@ -50,7 +50,6 @@ void show(Menu *menu)
     printMenuParams(menu);
     printMenuParams(node);
     printf("%s%s\n", menu->Path(), node->Label());
-#endif
 #endif
 }
 
@@ -203,7 +202,7 @@ const char *ledSetupText[] = {"Solid", "Blink", "Wipe", "Cycle",
                               "Rainbow", "Chase", "CycleChase"};
 const size_t ledSetupLength = sizeof(ledSetupText) / sizeof(ledSetupText[0]);
 const char *ledSubText[] = {"Solid", "Blink", "Wipe", "Cycle",
-                            "Rainbow", "Chase", "CycleChase", "Reset"};
+                            "Rainbow", "Chase", "CycleChase", "Xmas", "Reset"};
 const size_t ledSubLength = sizeof(ledSubText) / sizeof(ledSubText[0]);
 
 void addLedSubMenu(Menu *menu)

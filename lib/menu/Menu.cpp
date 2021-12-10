@@ -132,7 +132,6 @@ Menu *Menu::Add(Menu *item)
         count++;
         limit += item->range;
     }
-
     return item;
 }
 
@@ -140,20 +139,21 @@ Menu *Menu::Selection()
 {
     if (count > 0)
     {
-        Menu *node;
-        uint8_t j = 0;
-        uint8_t i = 0;
-        for (uint8_t n = 0; n < length; n++)
+        uint8_t n = 0;     // nodes index
+        uint8_t accum = 0; // accumulator
+        uint8_t seq = 0;    // node seq
+        do
         {
-            node = nodes[n];
-            j = index - i;
-            i += node->range;
-            if (index < i)
+            Menu *node = nodes[n];
+            seq = index - accum;
+            accum += node->range;
+            if (index < accum)
             {
-                node->sequence = j;
+                node->sequence = seq;
                 return node;
             }
-        }
+        } while (++n < length);
     }
     return this;
 }
+

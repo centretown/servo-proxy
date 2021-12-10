@@ -52,6 +52,7 @@ void LedSegment::setupCmd()
     case STRIP_CYCLE:
         cmd.indeces[0].max = count;
         cmd.indeces[1].max = 256;
+        cmd.indeces[2].max = 256;
         break;
 
     case STRIP_RAINBOW:
@@ -68,6 +69,15 @@ void LedSegment::setupCmd()
         cmd.indeces[0].max = 2;
         cmd.indeces[1].max = 3;
         cmd.indeces[2].max = 256;
+        break;
+
+    case STRIP_CHASE_XMAS:
+        cmd.indeces[0].max = 2;
+        cmd.indeces[1].max = 3;
+        cmd.indeces[2].max = 256;
+        cmd.indeces[3].max = 256;
+        cmd.wait = 200;
+
         break;
     default:
         break;
@@ -159,6 +169,9 @@ void LedSegment::loop()
 
     case STRIP_CHASE_CYCLE:
         chaseCycle();
+        break;
+    case STRIP_CHASE_XMAS:
+        chaseXmas();
         break;
     default:
         break;
@@ -252,6 +265,20 @@ void LedSegment::chase()
         (cmd.indeces[0].count == 0) ? cmd.color : 0;
     uint16_t step = cmd.indeces[1].count;
 
+    for (uint16_t i = begin + step; i <= end; i += theatreInc)
+    {
+        ledWriter->setPixelColor(i, color);
+    }
+    ledWriter->show(begin, end);
+}
+
+void LedSegment::chaseXmas()
+{
+    uint32_t color =
+        (cmd.indeces[0].count == 0)
+            ? ledWriter->Color(128, 0, 0)
+            : ledWriter->Color(0, 128, 0);
+    uint16_t step = cmd.indeces[1].count;
     for (uint16_t i = begin + step; i <= end; i += theatreInc)
     {
         ledWriter->setPixelColor(i, color);

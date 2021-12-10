@@ -4,6 +4,7 @@
 
 #pragma once
 #include <Arduino.h>
+#include <RotaryEncoder.h>
 
 typedef uint8_t RotaryState;
 
@@ -15,18 +16,16 @@ typedef uint8_t RotaryState;
 class Rotary
 {
 private:
-    uint8_t clockPin = 21;
-    uint8_t dataPin = 20;
+    RotaryEncoder &enc;
     uint8_t buttonPin = 44;
-    int lastClockState = LOW;
+    long lastPos = -999;
     int lastButtonState = LOW;
     uint8_t counter = 0;
     RotaryState state = ROTARY_NOP;
     uint64_t lastTime = 0;
-    uint64_t lastButtonClick = 0;
 
 public:
-    Rotary(uint8_t c = 21, uint8_t d = 20, uint8_t b = 44);
+    Rotary(RotaryEncoder &enc, uint8_t b);
     ~Rotary();
 
     void setup();
