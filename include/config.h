@@ -43,6 +43,8 @@ ServoServe servoServe(pServos, expanderPins,
 //////////////////////////////
 #if defined(USE_OLED_LIB)
 #include "OledDisplay.h"
+#include "OledMenuWriter.h"
+
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 // The pins for I2C are defined by the Wire-library.
 // UNO:       A4(SDA), A5(SCL)
@@ -99,6 +101,7 @@ LedStrips led(strips, sizeof(strips) / sizeof(strips[0]),
 //////////////////////////////
 #if defined(USE_TOUCH_LIB)
 #include "TouchSensor.h"
+#include "TouchMenuReader.h"
 #define TOUCH_SENSOR_PIN 44
 TouchSensor touch(TOUCH_SENSOR_PIN);
 #endif
@@ -107,6 +110,8 @@ TouchSensor touch(TOUCH_SENSOR_PIN);
 //////////////////////////////
 #if defined(USE_ROTARY_LIB)
 #include <Rotary.h>
+#include <RotaryMenuReader.h>
+
 #define ROTARY_A 15
 #define ROTARY_B 14
 #define ROTARY_BUTTON 34

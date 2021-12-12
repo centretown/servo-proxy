@@ -2,14 +2,13 @@
 
 #pragma once
 
-#include <stdio.h>
+#include <base.h>
 
 class MenuWriter
 {
-private:
 public:
-    MenuWriter(){}
-    ~MenuWriter(){}
-
-    virtual uint16_t setSelection(uint16_t) = 0;
+    MenuWriter() {}
+    ~MenuWriter() {}
+    virtual void write(const char *heading, const char *label,
+                       int32_t *value = NULL) = 0;
 };

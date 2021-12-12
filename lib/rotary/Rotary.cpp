@@ -31,12 +31,12 @@ void Rotary::loop()
     if (lastPos > newPos)
     {
         state = ROTARY_COUNTER_CLOCKWISE;
-        counter--;
+        counter -= inc;
     }
     else if (lastPos < newPos)
     {
         state = ROTARY_CLOCKWISE;
-        counter++;
+        counter += inc;
     }
     else
     {
@@ -50,6 +50,12 @@ void Rotary::loop()
 
     lastPos = newPos;
     lastTime = now;
+}
+
+void Rotary::SetRange(int32_t hi, int32_t lo)
+{
+    max = hi;
+    min = lo;
 }
 
 RotaryState Rotary::GetState()

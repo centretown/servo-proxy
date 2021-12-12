@@ -6,7 +6,6 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <Wire.h>
-// Adafruit_I2CDevice.h
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_GFX.h>
 
@@ -42,22 +41,22 @@ class OledDisplay
 private:
     Adafruit_SSD1306 &display;
     uint8_t addr;
-    /* data */
+
     bool active = false;
     uint16_t textColor;
-
-    // color
 
 public:
     OledDisplay(Adafruit_SSD1306 &display, uint8_t addr);
     ~OledDisplay();
 
     void setup();
+
     bool isActive() { return active; }
 
     void drawText(const char *text, uint8_t x = 0, uint8_t y = 0, uint8_t size = 2, uint16_t color = SSD1306_WHITE);
-    void drawBitmap();
-    void loop();
+    void drawIcon(IconID, int16_t, int16_t);
+    void drawMenu(const char *heading, const char *label, int32_t *value = NULL);
+
     void reset();
     int process(const char *buf);
     void start(uint8_t command, char *parms, size_t nparms);
@@ -66,9 +65,6 @@ public:
     void dartboard() { drawIcon(ICON_DARTBOARD, 0, 0); }
     void panda() { drawIcon(ICON_PANDA, 0, 0); }
     void strip() { drawIcon(ICON_LEDSTRIP, 0, 0); }
-    void drawIcon(IconID, int16_t, int16_t);
-    void drawMenu(const char *, const char *);
-    // void drawMenu(const char *, IconID);
 };
 
 #endif

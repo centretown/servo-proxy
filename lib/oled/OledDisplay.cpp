@@ -3,7 +3,8 @@
 #include "OledDisplay.h"
 #include "icons.h"
 
-OledDisplay::OledDisplay(Adafruit_SSD1306 &display, uint8_t addr) : display(display), addr(addr)
+OledDisplay::OledDisplay(Adafruit_SSD1306 &display,
+                         uint8_t addr) : display(display), addr(addr)
 {
 }
 
@@ -21,14 +22,6 @@ void OledDisplay::setup()
 
     display.clearDisplay();
     dartboard();
-}
-
-void OledDisplay::drawBitmap()
-{
-}
-
-void OledDisplay::loop()
-{
 }
 
 int OledDisplay::process(const char *buf)
@@ -97,7 +90,7 @@ void OledDisplay::drawText(const char *text, uint8_t x, uint8_t y, uint8_t size,
     display.display();
 }
 
-void OledDisplay::drawMenu(const char *heading, const char *label)
+void OledDisplay::drawMenu(const char *heading, const char *label, int32_t *value)
 {
     reset();
     display.setTextColor(SSD1306_WHITE);
@@ -108,20 +101,16 @@ void OledDisplay::drawMenu(const char *heading, const char *label)
 
     display.setTextSize(2);
     display.setCursor(2, 14);
-    display.println(label);
+    display.print(label);
+    display.setCursor(2, 14);
+    if (value != NULL)
+    {
+        display.setCursor(display.width() - 40,
+                          display.height() - 18);
+        display.print(*value);
+    }
     display.display();
 }
-
-// void OledDisplay::drawMenu(const char *text, IconID id)
-// {
-//     display.clearDisplay();
-//     drawIcon(id, 32, 0);
-//     display.setTextSize(2);
-//     display.setTextColor(SSD1306_WHITE);
-//     display.setCursor(2, 1);
-//     display.println(text);
-//     display.display();
-// }
 
 void OledDisplay::drawIcon(IconID id, int16_t x, int16_t y)
 {

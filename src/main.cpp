@@ -8,7 +8,6 @@
 #include "config.h"
 #include "menus.h"
 
-
 // for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
 #if !defined(LED_BUILTIN) && !defined(ESP32)
 #define LED_BUILTIN PB1
@@ -68,20 +67,23 @@ void setup()
   {
     Serial.println(F("OLED FAILED!"));
   }
+  Menu::SetWriter(&oledWriter);
 #endif
 
 #if defined(USE_TOUCH_LIB)
   touch.setup();
   Serial.println(F("Touch Sensor OK!"));
+  Menu::SetReader(&touchReader);
 #endif
 
 #if defined(USE_ROTARY_LIB)
   rotary.setup();
   Serial.println(F("Rotary Switch Setup!"));
+  Menu::SetReader(&rotaryReader);
 #endif
 
   usrTerm.setup(".usr");
-  Menu::Start();
+  Menu::setup();
 
   Serial1.flush();
   printFree();
@@ -92,15 +94,7 @@ void processBuffer(const char *buf);
 
 void loop()
 {
-#if defined(USE_TOUCH_LIB)
-  touch.loop();
-  touchMenu();
-#endif
-
-#if defined(USE_ROTARY_LIB)
-  rotary.loop();
-  rotaryMenu();
-#endif
+  Menu::loop();
 
 #if defined(USE_SERVO_LIB)
   servoServe.loop();

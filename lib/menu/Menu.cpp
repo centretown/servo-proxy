@@ -10,6 +10,62 @@ Menu *Menu::Root(uint8_t gen) { return stack.Root(gen); }
 Menu rootMenu("", 4);
 char Menu::route[ROUTESIZE] = {0};
 
+MenuReader *Menu::reader = NULL;
+MenuWriter *Menu::writer = NULL;
+
+void Menu::SetReader(MenuReader *r)
+{
+    reader = r;
+}
+
+void Menu::SetWriter(MenuWriter *w)
+{
+    writer = w;
+}
+
+void Menu::setup()
+{
+    stack.Push(&rootMenu);
+    if (writer != NULL)
+    {
+        Menu *menu = Current();
+        Menu *node = menu->Selection();
+        writer->write(menu->Label(), node->Label());
+    }
+}
+
+void Menu::loop()
+{
+    MenuEvent event = MENU_NOP;
+    if (reader == NULL)
+    {
+        return;
+    }
+
+    event = reader->GetEvent();
+    switch (event)
+    {
+    case MENU_PREVIOUS:
+        Previous();
+        break;
+    case MENU_NEXT:
+        Next();
+        break;
+    case MENU_SELECT:
+        Select();
+        break;
+    case MENU_NOP:
+        return;
+    }
+
+    if (writer != NULL)
+    {
+        Menu *menu = Current();
+        Menu *node = menu->Selection();
+        writer->write(menu->Label(), node->Label());
+    }
+}
+
 const char *Menu::Path()
 {
     route[0] = 0;
@@ -21,11 +77,6 @@ const char *Menu::Path()
         strcat(route, "/");
     };
     return route;
-}
-
-void Menu::Start()
-{
-    stack.Push(&rootMenu);
 }
 
 void Menu::Next()
@@ -60,10 +111,13 @@ void Menu::Select()
     if (node->endpoint != NULL)
     {
         node->endpoint(node);
-        return;
+        if (node->count == 0)
+        {
+            return;
+        }
     }
 
-    if (node->Count() > 0)
+    if (node->count > 0)
     {
         stack.Push(node);
     }
@@ -141,7 +195,7 @@ Menu *Menu::Selection()
     {
         uint8_t n = 0;     // nodes index
         uint8_t accum = 0; // accumulator
-        uint8_t seq = 0;    // node seq
+        uint8_t seq = 0;   // node seq
         do
         {
             Menu *node = nodes[n];
@@ -156,4 +210,3 @@ Menu *Menu::Selection()
     }
     return this;
 }
-

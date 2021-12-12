@@ -19,85 +19,19 @@ void printMenuParams(Menu *menu)
 #endif
 //////////////////////////////
 
-//////////////////////////////
 #if defined(USE_OLED_LIB)
-uint8_t pic = 0;
-bool blinking = false;
-void oledShow(Menu *menu)
-{
-    if (menu == NULL)
-    {
-        oled.drawText("null");
-        return;
-    }
-    // IconID id = (Menu::Root()->Index() == 0) ? ICON_LEDSTRIP : ICON_GEARS;
-    Menu *node = menu->Selection();
-    oled.drawMenu(menu->Label(), node->Label());
-}
+OledMenuWriter oledWriter(oled);
 #endif
-//////////////////////////////
-
-void show(Menu *menu)
-{
-#if defined(USE_OLED_LIB)
-    oledShow(menu);
-#endif
-    Menu *node = menu->Selection();
-#if defined(ARDUINO)
-    Serial.print(Menu::Path());
-    Serial.println(node->Label());
-#else
-    printMenuParams(menu);
-    printMenuParams(node);
-    printf("%s%s\n", menu->Path(), node->Label());
-#endif
-}
 
 //////////////////////////////
 #if defined(USE_ROTARY_LIB)
-void rotaryMenu()
-{
-    RotaryState state = rotary.GetState();
-    switch (state)
-    {
-    case ROTARY_COUNTER_CLOCKWISE:
-        Menu::Previous();
-        break;
-
-    case ROTARY_CLOCKWISE:
-        Menu::Next();
-        break;
-
-    case ROTARY_CLICK:
-        Menu::Select();
-        break;
-
-    default:
-        return;
-    }
-    show(Menu::Current());
-}
+RotaryMenuReader rotaryReader(rotary);
 #endif
 //////////////////////////////
 
 //////////////////////////////
 #if defined(USE_TOUCH_LIB)
-void touchMenu()
-{
-    TouchState state = touch.GetState();
-    switch (state)
-    {
-    case TOUCH_TAP:
-        Menu::Next();
-        break;
-    case TOUCH_HOLD:
-        Menu::Select();
-        break;
-    default:
-        return;
-    }
-    show(Menu::Current());
-}
+TouchMenuReader touchReader(touch);
 #endif
 //////////////////////////////
 

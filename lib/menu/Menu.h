@@ -4,7 +4,8 @@
 
 #include "base.h"
 #include "Stack.h"
-#include "EndPoint.h"
+#include "MenuReader.h"
+#include "MenuWriter.h"
 
 // #define MAX_NODES 12
 #define MAX_LEVELS 12
@@ -16,18 +17,21 @@ class Menu
 {
 private:
     const char *label;
-    uint8_t length = 0; //number of nodes allocated
-    uint8_t range = 0;  //number indeces filled by this node
-    uint8_t level = 0;  //menu depth
-    uint8_t limit = 0;  //number of indeces added
-    uint8_t count = 0;  //number of nodes added
-    uint8_t index = 0;  //current
-    uint8_t sequence = 0;  //current
+    uint8_t length = 0;   //number of nodes allocated
+    uint8_t range = 0;    //number indeces filled by this node
+    uint8_t level = 0;    //menu depth
+    uint8_t limit = 0;    //number of indeces added
+    uint8_t count = 0;    //number of nodes added
+    uint8_t index = 0;    //current node
+    uint8_t sequence = 0; //current index within node
+
     void (*endpoint)(Menu *) = NULL;
-    EndPoint *point = NULL;
+    // Editor *editor = NULL;
     Menu **nodes = NULL;
 
     static char route[ROUTESIZE];
+    static MenuReader *reader;
+    static MenuWriter *writer;
     static Stack<Menu> stack;
 
 public:
@@ -38,6 +42,8 @@ public:
 
     Menu *Add(Menu *item);
 
+    static void SetReader(MenuReader *);
+    static void SetWriter(MenuWriter *);
     static const char *Path();
     static Menu *Current();
     static Menu *Ancestor(uint8_t gen);
@@ -46,7 +52,9 @@ public:
     static void Select();
     static void Next();
     static void Previous();
-    static void Start();
+
+    static void loop();
+    static void setup();
 
     const char *Label();
     uint8_t Index() { return index; }
@@ -56,7 +64,6 @@ public:
     uint8_t Sequence() { return sequence; }
     uint8_t Range() { return range; }
 
-    // Menu *Node(uint8_t i) { return nodes[i]; }
     Menu *Selection();
 };
 
