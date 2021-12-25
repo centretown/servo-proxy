@@ -113,7 +113,7 @@ void OledDisplay::drawMenu(const char *heading, const char *label, int16_t value
     display.setTextSize(1);
     display.setCursor(2, 1);
     display.print(heading);
-    display.print(" ");
+    display.setCursor(80, 1);
     display.print(value);
 
     // Serial.print(heading);
@@ -129,7 +129,7 @@ void OledDisplay::drawMenu(const char *heading, const char *label, int16_t value
     int16_t h = (value * dh) / 255;
     int16_t y = dh - h;
 
-    for (int16_t x = w - 15; x < w; x++)
+    for (int16_t x = w - 20; x < w; x++)
     {
         display.drawFastVLine(x, y, h, SSD1306_WHITE);
     }
