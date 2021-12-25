@@ -27,10 +27,11 @@ private:
 
 public:
     TouchSensor(uint8_t pin);
+    
     ~TouchSensor();
 
     void setup();
-    void loop();
+    void tick();
     TouchState GetState();
 };
 

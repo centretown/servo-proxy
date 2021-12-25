@@ -35,7 +35,7 @@ public:
     ~Rotary();
 
     void setup();
-    void loop();
+    void tick();
 
     RotaryState GetState();
     int32_t Counter() { return counter; }

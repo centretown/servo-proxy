@@ -4,28 +4,30 @@
 #pragma once
 
 #include "base.h"
-#include "MenuReader.h"
+#include "EventReader.h"
 #include "TouchSensor.h"
 
-class TouchMenuReader : public MenuReader
+class TouchReader : public EventReader
 {
 private:
     TouchSensor &touch;
 
 public:
-    TouchMenuReader(TouchSensor &touch) : touch(touch) {}
-    ~TouchMenuReader() {}
-    virtual MenuEvent GetEvent()
+    TouchReader(TouchSensor &touch) : touch(touch) {}
+    ~TouchReader() {}
+    virtual UserEvent GetEvent()
     {
         touch.loop();
         switch (touch.GetState())
         {
         case TOUCH_TAP:
-            return MENU_NEXT;
+            return USER_NEXT;
         case TOUCH_HOLD:
-            return MENU_PREVIOUS;
+            return USER_SELECT;
+        default:
+            break;
         }
-        return MENU_NOP;
+        return USER_NOP;
     }
 };
 

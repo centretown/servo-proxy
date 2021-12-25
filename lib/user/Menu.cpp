@@ -6,21 +6,28 @@ Stack<Menu> Menu::stack(MAX_LEVELS);
 Menu *Menu::Current() { return stack.Current(); }
 Menu *Menu::Ancestor(uint8_t gen) { return stack.Ancestor(gen); }
 Menu *Menu::Root(uint8_t gen) { return stack.Root(gen); }
+EndPoint *Menu::point = NULL;
+uint8_t Menu::state = MENU_NAVIGATE;
 
 Menu rootMenu("", 4);
 char Menu::route[ROUTESIZE] = {0};
 
-MenuReader *Menu::reader = NULL;
-MenuWriter *Menu::writer = NULL;
+EventReader *Menu::reader = NULL;
+ResponseWriter *Menu::writer = NULL;
 
-void Menu::SetReader(MenuReader *r)
+void Menu::SetReader(EventReader *r)
 {
     reader = r;
 }
 
-void Menu::SetWriter(MenuWriter *w)
+void Menu::SetWriter(ResponseWriter *w)
 {
     writer = w;
+}
+
+void Menu::SetPoint(EndPoint *p)
+{
+    point = p;
 }
 
 void Menu::setup()
@@ -34,36 +41,73 @@ void Menu::setup()
     }
 }
 
-void Menu::loop()
+Menu *Menu::navigate(UserEvent event)
 {
-    MenuEvent event = MENU_NOP;
-    if (reader == NULL)
-    {
-        return;
-    }
-
-    event = reader->GetEvent();
     switch (event)
     {
-    case MENU_PREVIOUS:
-        Previous();
+    case USER_PREVIOUS:
+        return Previous();
+    case USER_NEXT:
+        return Next();
+    case USER_SELECT:
+        return Select();
+    default:
         break;
-    case MENU_NEXT:
-        Next();
-        break;
-    case MENU_SELECT:
-        Select();
-        break;
-    case MENU_NOP:
+    }
+    return NULL;
+}
+
+void Menu::loop()
+{
+    UserEvent event = reader->GetEvent();
+    if (event == USER_NOP)
+    {
         return;
     }
 
-    if (writer != NULL)
+    Menu *menu;
+
+    if (state == MENU_EDIT)
     {
-        Menu *menu = Current();
-        Menu *node = menu->Selection();
-        writer->write(menu->Label(), node->Label());
+        menu = Current();
+        if (point != NULL)
+        {
+            if (!point->process(event))
+            {
+                state = MENU_RUN;
+                point->start();
+            }
+        }
     }
+    else
+    {
+        menu = navigate(event);
+    }
+
+    if (writer == NULL)
+    {
+        return;
+    }
+
+    Menu *node = menu->Selection();
+
+    if (state == MENU_EDIT || state == MENU_RUN)
+    {
+        if (point != NULL)
+        {
+            point->SetParameter(menu->Index());
+            writer->write(menu->Label(),
+                          node->Label(),
+                          point->GetCounter());
+            return;
+        }
+        writer->write(menu->Label(),
+                      node->Label(),
+                      0);
+        return;
+    }
+
+    writer->write(menu->Label(), node->Label());
 }
 
 const char *Menu::Path()
@@ -79,7 +123,7 @@ const char *Menu::Path()
     return route;
 }
 
-void Menu::Next()
+Menu *Menu::Next()
 {
     Menu *menu = Current();
     menu->index++;
@@ -87,33 +131,35 @@ void Menu::Next()
     {
         menu->index = 0;
     }
+    return menu;
 }
-void Menu::Previous()
+Menu *Menu::Previous()
 {
     Menu *menu = stack.Current();
     if (menu->index == 0)
     {
         menu->index = menu->limit - 1;
-        return;
     }
-    menu->index--;
+    else
+    {
+        menu->index--;
+    }
+    return menu;
 }
 
-void Menu::Select()
+Menu *Menu::Select()
 {
     Menu *menu = Current();
-    if (menu == NULL)
-    {
-        return;
-    }
-
     Menu *node = menu->Selection();
     if (node->endpoint != NULL)
     {
+        state = (state == MENU_NAVIGATE) ? MENU_RUN : MENU_EDIT;
+
         node->endpoint(node);
+
         if (node->count == 0)
         {
-            return;
+            return menu;
         }
     }
 
@@ -123,13 +169,17 @@ void Menu::Select()
     }
     else //exit
     {
+        state = (state == MENU_EDIT) ? MENU_RUN : MENU_NAVIGATE;
+
         menu->Next();
         stack.Pop();
     }
+    return Current();
 }
 
 Menu::Menu(const char *label,
-           void (*func)(Menu *)) : label(label), length(0), range(1)
+           void (*func)(Menu *),
+           uint8_t length) : label(label), length(length), range(1)
 {
     endpoint = func;
 }
@@ -149,12 +199,13 @@ Menu::Menu(const char *label,
 
 Menu::Menu(const char *label,
            uint8_t length,
-           uint8_t range) : label(label), length(length), range(range)
+           uint8_t range, void (*func)(Menu *)) : label(label), length(length), range(range)
 {
     if (length > 0)
     {
         nodes = (Menu **)malloc(sizeof(Menu *) * length);
     }
+    endpoint = func;
 }
 
 Menu::~Menu()

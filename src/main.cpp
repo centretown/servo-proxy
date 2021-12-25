@@ -1,19 +1,100 @@
 // Copyright (c) 2021 Dave Marsh. See LICENSE.
 #ifdef ARDUINO
 
+#define USE_SERVO_LIB
+#define USE_LEDSTRIP_LIB
+#define USE_OLED_LIB
+#define USE_ROTARY_LIB
+// #define USE_TOUCH_LIB
+
 #include <Arduino.h>
 #include <MicroTerm.h>
 #include "CameraListener.h"
 #include "shared.h"
 #include "config.h"
-#include "menus.h"
+
+#if defined(USE_SERVO_LIB)
+#include "ServoServe.h"
+
+#if defined(USE_PCA9685_SERVO_EXPANDER)
+
+#if defined(ARDUINO_SAM_DUE)
+ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS, &Wire1);
+ServoEasing Servo2(PCA9685_DEFAULT_ADDRESS, &Wire1);
+ServoEasing Servo3(PCA9685_DEFAULT_ADDRESS, &Wire1);
+ServoEasing Servo4(PCA9685_DEFAULT_ADDRESS, &Wire1);
+#else
+ServoEasing Servo1(PCA9685_DEFAULT_ADDRESS, &Wire);
+ServoEasing Servo2(PCA9685_DEFAULT_ADDRESS, &Wire);
+ServoEasing Servo3(PCA9685_DEFAULT_ADDRESS, &Wire);
+ServoEasing Servo4(PCA9685_DEFAULT_ADDRESS, &Wire);
+#endif // ARDUINO_SAM_DUE
+
+#else
+ServoEasing Servo1;
+ServoEasing Servo2;
+ServoEasing Servo3;
+ServoEasing Servo4;
+#endif // USE_PCA9685_SERVO_EXPANDER
+
+ServoEasing *servos[] = {&Servo1, &Servo2, &Servo3, &Servo4};
+ServoEasing **pServos = servos;
+// Only works on pin 2, 3, 5, 6, 7, 8, 44, 45 and 46 on Arduino Mega!
+int8_t expanderPins[] = {2, 3, 5, 6};
+size_t expanderPinCount = sizeof(expanderPins) / sizeof(expanderPins[0]);
+ServoServe servoServe(pServos, expanderPins, expanderPinCount);
+#endif // USE_SERVO_LIB
+
+#ifdef USE_OLED_LIB
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+OledDisplay oled(display, SCREEN_ADDRESS);
+#endif // USE_OLED_LIB
+
+#ifdef USE_LEDSTRIP_LIB
+Adafruit_NeoPixel strip19(19, LEDSTRIP_PIN11, NEO_BRG + NEO_KHZ800);
+Adafruit_NeoPixel strip15(15, LEDSTRIP_PIN10, NEO_BRG + NEO_KHZ800);
+Adafruit_NeoPixel strip4(4, LEDSTRIP_PIN12, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip8(8, LEDSTRIP_PIN13, NEO_GRB + NEO_KHZ800);
+
+// Adafruit_NeoPixel strip16 = Adafruit_NeoPixel(7, LEDSTRIP_PIN16, NEO_BRG + NEO_KHZ800);
+LedSegment segs[] = {
+    LedSegment(0, 3),   //0 4 led indicators
+    LedSegment(4, 45),  //1 8+19
+    LedSegment(4, 11),  //2 8
+    LedSegment(12, 30), //3 19 a
+    LedSegment(31, 45), //4 16
+};
+
+size_t ledSegmentCount = sizeof(segs) / sizeof(segs[0]);
+
+Adafruit_NeoPixel *strips[] = {
+    &strip4,
+    &strip8,
+    &strip19,
+    &strip15,
+};
+
+size_t ledStripCount = sizeof(strips) / sizeof(strips[0]);
+
+LedStrips led(strips, ledStripCount, segs, ledSegmentCount);
+LedEndPoint ledPoint(led);
+#endif // USE_LEDSTRIP_LIB
+
+#ifdef USE_TOUCH_LIB
+TouchSensor touch(TOUCH_SENSOR_PIN);
+#endif // USE_TOUCH_LIB
+
+#if defined(USE_ROTARY_LIB)
+RotaryEncoder enc(ROTARY_A, ROTARY_B, RotaryEncoder::LatchMode::TWO03);
+Rotary rotary(enc, ROTARY_BUTTON);
+#endif // USE_ROTARY_LIB
 
 // for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
 #if !defined(LED_BUILTIN) && !defined(ESP32)
 #define LED_BUILTIN PB1
 #endif
 // On the Zero and others we switch explicitly to SerialUSB
-#if defined(ARDUINO_ARCH_SAMD)
+#ifdef ARDUINO_ARCH_SAMD
 #define Serial SerialUSB
 #endif
 
@@ -25,6 +106,8 @@ char usrBuffer[81] = {0};
 char testBuffer[81] = {0};
 MicroTerm usrTerm(Serial, usrBuffer, sizeof(usrBuffer));
 CameraListener camTerm(Serial1);
+
+#include <menus.h>
 
 void setup()
 {

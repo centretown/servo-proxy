@@ -18,10 +18,10 @@ void Rotary::setup()
     pinMode(buttonPin, INPUT_PULLUP);
 }
 
-void Rotary::loop()
+void Rotary::tick()
 {
     uint64_t now = millis();
-    if (now < lastTime + 2)
+    if (now < lastTime + 3)
     {
         return;
     }

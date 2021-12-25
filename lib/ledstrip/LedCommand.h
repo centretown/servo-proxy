@@ -16,18 +16,33 @@ enum LedCommand
     STRIP_CHASE_CYCLE,   // chase combined with cycle
     STRIP_CHASE_XMAS,    // chase combined with xmas
     STRIP_RESET,         // reset to blank
-    STRIP_OUT_OF_BOUNDS, // to big
-    STRIP_FIRST = STRIP_SOLID
+    STRIP_OUT_OF_BOUNDS, // too big
+    STRIP_FIRST = STRIP_SOLID,
+    STRIP_LAST = STRIP_CHASE_XMAS
 };
 
-typedef struct
-{
-    uint8_t red = 127;
-    uint8_t green = 127;
-    uint8_t blue = 127;
-    uint16_t wait = 50;       // milli-sec
-    uint16_t duration = 1000; // milli-sec, 0 forever
-} led_settings;
+#define MAX_WAIT 0xffff
+// enum LedPreset
+// {
+//     STRIP_PRESET_RED,
+//     STRIP_PRESET_GREEN,
+//     STRIP_PRESET_BLUE,
+//     STRIP_PRESET_REPEAT,
+//     STRIP_PRESET_DELAY,
+//     STRIP_PRESET_COUNT,
+//     STRIP_PRESET_FIRST = STRIP_PRESET_RED
+// };
+
+// typedef uint16_t led_preset[STRIP_PRESET_COUNT];
+
+// typedef struct
+// {
+//     uint8_t red = 127;
+//     uint8_t green = 127;
+//     uint8_t blue = 127;
+//     uint8_t repeat = 255; // milli-sec, 0 forever
+//     uint16_t wait = 50;   // milli-sec
+// } led_preset;
 
 typedef struct
 {
@@ -37,10 +52,10 @@ typedef struct
 
 typedef struct
 {
-    uint8_t command = 0;
-    uint8_t repeat = 0;
-    uint16_t wait = 500;
+    uint8_t command = STRIP_NOP;
     uint32_t color = 0;
+    uint8_t repeat = 0;
+    uint16_t delay = 500;
     uint64_t next = 0L;
     led_index indeces[4];
 } led_cmd_t;

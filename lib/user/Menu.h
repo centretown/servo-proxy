@@ -4,14 +4,16 @@
 
 #include "base.h"
 #include "Stack.h"
-#include "MenuReader.h"
-#include "MenuWriter.h"
+#include "EventReader.h"
+#include "ResponseWriter.h"
+#include "EndPoint.h"
 
-// #define MAX_NODES 12
 #define MAX_LEVELS 12
-#define UNSELECTED 0xff
-#define UNSEQUENCED 0xff
 #define ROUTESIZE 64
+
+#define MENU_NAVIGATE 0x00
+#define MENU_RUN 0x02
+#define MENU_EDIT 0x03
 
 class Menu
 {
@@ -26,32 +28,37 @@ private:
     uint8_t sequence = 0; //current index within node
 
     void (*endpoint)(Menu *) = NULL;
-    // Editor *editor = NULL;
     Menu **nodes = NULL;
 
     static char route[ROUTESIZE];
-    static MenuReader *reader;
-    static MenuWriter *writer;
+    static EventReader *reader;
+    static ResponseWriter *writer;
     static Stack<Menu> stack;
+    static EndPoint *point;
+    static uint8_t state;
+    static Menu *navigate(UserEvent event);
 
 public:
-    Menu(const char *label, void (*endpoint)(Menu *) = NULL);
+    Menu(const char *label,
+         void (*endpoint)(Menu *) = NULL, uint8_t length = 0);
     Menu(const char *label, uint8_t length);
-    Menu(const char *label, uint8_t length, uint8_t range);
+    Menu(const char *label, uint8_t length,
+         uint8_t range, void (*func)(Menu *) = NULL);
     ~Menu();
 
     Menu *Add(Menu *item);
 
-    static void SetReader(MenuReader *);
-    static void SetWriter(MenuWriter *);
+    static void SetReader(EventReader *);
+    static void SetWriter(ResponseWriter *);
     static const char *Path();
     static Menu *Current();
     static Menu *Ancestor(uint8_t gen);
     static Menu *Root(uint8_t gen = 0);
+    static void SetPoint(EndPoint *p);
 
-    static void Select();
-    static void Next();
-    static void Previous();
+    static Menu *Select();
+    static Menu *Next();
+    static Menu *Previous();
 
     static void loop();
     static void setup();
@@ -72,7 +79,11 @@ extern Menu rootMenu;
 void addExit(Menu *menu);
 void addEndpoints(Menu *menu,
                   const char *text[], size_t textCount,
-                  void (*endpoint)(Menu *));
+                  void (*endpoint)(Menu *) = NULL);
+void addEndpoints(Menu *menu,
+                  const char *text[], size_t textCount,
+                  const char *parms[], size_t parmsCount,
+                  void (*endpoint)(Menu *), void (*editor)(Menu *));
 void addMenus(Menu *menu,
               const char *text[], size_t textCount,
               size_t length,

@@ -2,9 +2,9 @@
 
 #ifndef ARDUINO
 
-#include "NativeMenuReader.h"
+#include "NativeReader.h"
 
-MenuEvent NativeMenuReader::GetEvent()
+UserEvent NativeReader::GetEvent()
 {
     unsigned option;
     int count = scanf("%u", &option);
@@ -13,14 +13,14 @@ MenuEvent NativeMenuReader::GetEvent()
         switch (option)
         {
         case 1:
-            return MENU_PREVIOUS;
+            return USER_PREVIOUS;
         case 2:
-            return MENU_NEXT;
+            return USER_NEXT;
         case 3:
-            return MENU_SELECT;
+            return USER_SELECT;
         }
     }
-    return MENU_NOP;
+    return USER_NOP;
 }
 
 #endif

@@ -15,11 +15,9 @@ TouchSensor::~TouchSensor()
 void TouchSensor::setup()
 {
     pinMode(pin, INPUT);
-    Serial.print("Touch Pin");
-    Serial.println(pin);
 }
 
-void TouchSensor::loop()
+void TouchSensor::tick()
 {
     int currentState = digitalRead(pin);
     if (currentState == pinState)

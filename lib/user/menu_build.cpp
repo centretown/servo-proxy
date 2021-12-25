@@ -8,13 +8,27 @@ void addExit(Menu *menu)
 
 void addEndpoints(Menu *menu,
                   const char *labels[], size_t count,
-                  void (*endpoint)(Menu *) = NULL)
+                  void (*endpoint)(Menu *))
 {
     for (size_t i = 0; i < count; i++)
     {
         menu->Add(new Menu(labels[i], endpoint));
     }
     // addExit(menu);
+}
+
+void addEndpoints(Menu *menu,
+                  const char *labels[], size_t count,
+                  const char *parms[], size_t parmsCount,
+                  void (*endpoint)(Menu *), void (*editor)(Menu *))
+{
+    Menu *sub;
+    for (size_t i = 0; i < count; i++)
+    {
+        sub = menu->Add(new Menu(labels[i], parmsCount + 1, 1, endpoint));
+        addEndpoints(sub, parms, parmsCount, editor);
+        addExit(sub);
+    }
 }
 
 void addMenus(Menu *menu,

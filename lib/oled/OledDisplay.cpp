@@ -90,7 +90,7 @@ void OledDisplay::drawText(const char *text, uint8_t x, uint8_t y, uint8_t size,
     display.display();
 }
 
-void OledDisplay::drawMenu(const char *heading, const char *label, int32_t *value)
+void OledDisplay::drawMenu(const char *heading, const char *label)
 {
     reset();
     display.setTextColor(SSD1306_WHITE);
@@ -100,14 +100,38 @@ void OledDisplay::drawMenu(const char *heading, const char *label, int32_t *valu
     display.println(heading);
 
     display.setTextSize(2);
-    display.setCursor(2, 14);
+    display.setCursor(2, 15);
     display.print(label);
-    display.setCursor(2, 14);
-    if (value != NULL)
+    display.display();
+}
+
+void OledDisplay::drawMenu(const char *heading, const char *label, int16_t value)
+{
+    reset();
+    display.setTextColor(SSD1306_WHITE);
+
+    display.setTextSize(1);
+    display.setCursor(2, 1);
+    display.print(heading);
+    display.print(" ");
+    display.print(value);
+
+    // Serial.print(heading);
+    // Serial.print(" ");
+    // Serial.print(value);
+
+    display.setTextSize(2);
+    display.setCursor(2, 15);
+    display.print(label);
+
+    int16_t w = display.width();
+    int16_t dh = display.height();
+    int16_t h = (value * dh) / 255;
+    int16_t y = dh - h;
+
+    for (int16_t x = w - 15; x < w; x++)
     {
-        display.setCursor(display.width() - 40,
-                          display.height() - 18);
-        display.print(*value);
+        display.drawFastVLine(x, y, h, SSD1306_WHITE);
     }
     display.display();
 }

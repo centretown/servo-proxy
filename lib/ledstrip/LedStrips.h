@@ -54,5 +54,7 @@ public:
     uint16_t numPixels() { return nPixels; }
     virtual void setPixelColor(uint16_t n, uint32_t c);
     virtual void show(uint16_t begin, uint16_t end);
+    
+    LedSegment *Segment(uint8_t i) { return &segments[i]; }
 };
 #endif

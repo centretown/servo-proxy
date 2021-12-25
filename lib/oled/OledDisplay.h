@@ -55,7 +55,8 @@ public:
 
     void drawText(const char *text, uint8_t x = 0, uint8_t y = 0, uint8_t size = 2, uint16_t color = SSD1306_WHITE);
     void drawIcon(IconID, int16_t, int16_t);
-    void drawMenu(const char *heading, const char *label, int32_t *value = NULL);
+    void drawMenu(const char *heading, const char *label);
+    void drawMenu(const char *heading, const char *label, int16_t value);
 
     void reset();
     int process(const char *buf);
