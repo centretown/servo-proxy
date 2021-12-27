@@ -91,15 +91,9 @@ void Menu::loop()
 
     Menu *node = menu->Selection();
 
-    if (state == MENU_EDIT)
+    if (state == MENU_NAVIGATE)
     {
-        char buf[18] = {0};
-        snprintf(buf, sizeof(buf), "%s *", node->Label());
-        point->SetParameter(menu->Index());
-        writer->write(menu->Label(),
-                      buf,
-                      point->GetCounter());
-        return;
+        writer->write(menu->Label(), node->Label());
     }
     else if (state == MENU_RUN)
     {
@@ -107,10 +101,16 @@ void Menu::loop()
         writer->write(menu->Label(),
                       node->Label(),
                       point->GetCounter());
-        return;
     }
-
-    writer->write(menu->Label(), node->Label());
+    else if (state == MENU_EDIT)
+    {
+        char buf[18] = {0};
+        snprintf(buf, sizeof(buf), "%s *", node->Label());
+        point->SetParameter(menu->Index());
+        writer->write(menu->Label(),
+                      buf,
+                      point->GetCounter());
+    }
 }
 
 const char *Menu::Path()

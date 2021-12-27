@@ -36,9 +36,8 @@ private:
     uint8_t testAngle = 0;
 
 public:
-    ServoServe(
-        ServoEasing **servos, int8_t *expanderPins, size_t count);
-
+    ServoServe(ServoEasing **servos,
+               int8_t *expanderPins, size_t count);
     ~ServoServe();
 
     void setup();

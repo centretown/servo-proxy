@@ -11,7 +11,6 @@ protected:
     uint8_t index = 0;
     uint8_t command = 0;
     uint8_t parameter = 0;
-    uint8_t increment = 1;
     uint64_t last = 0;
 
 public:

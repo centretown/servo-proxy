@@ -129,10 +129,12 @@ void OledDisplay::drawMenu(const char *heading, const char *label, int16_t value
     int16_t h = (value * dh) / 255;
     int16_t y = dh - h;
 
-    for (int16_t x = w - 20; x < w; x++)
-    {
-        display.drawFastVLine(x, y, h, SSD1306_WHITE);
-    }
+    display.drawRect(w - 20, y, 20, h, SSD1306_WHITE);
+
+    // for (int16_t x = w - 20; x < w; x++)
+    // {
+    //     display.drawFastVLine(x, y, h, SSD1306_WHITE);
+    // }
     display.display();
 }
 

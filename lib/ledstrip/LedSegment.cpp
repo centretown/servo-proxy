@@ -22,14 +22,14 @@ LedSegment::~LedSegment()
 void LedSegment::setup(LedWriter *w)
 {
     ledWriter = w;
-    setPreset(STRIP_SOLID, 128, 128, 128, 255, MAX_WAIT);
-    setPreset(STRIP_BLINK, 128, 128, 128, 255, 100);
-    setPreset(STRIP_WIPE, 128, 128, 128, 255, 250);
-    setPreset(STRIP_CYCLE, 128, 128, 128, 255, 10);
-    setPreset(STRIP_RAINBOW, 128, 128, 128, 255, MAX_WAIT);
-    setPreset(STRIP_CHASE, 128, 128, 128, 255, 100);
-    setPreset(STRIP_CHASE_CYCLE, 128, 128, 128, 255, 100);
-    setPreset(STRIP_CHASE_XMAS, 128, 128, 0, 255, 300);
+    setPreset(STRIP_SOLID, 63, 63, 63, 255, 255);
+    setPreset(STRIP_BLINK, 63, 63, 63, 255, 100);
+    setPreset(STRIP_WIPE, 63, 63, 63, 255, 250);
+    setPreset(STRIP_CYCLE, 63, 63, 63, 255, 10);
+    setPreset(STRIP_RAINBOW, 63, 63, 63, 255, 255);
+    setPreset(STRIP_CHASE, 63, 63, 63, 255, 100);
+    setPreset(STRIP_CHASE_CYCLE, 63, 63, 63, 255, 100);
+    setPreset(STRIP_CHASE_XMAS, 63, 63, 0, 255, 300);
 }
 
 void LedSegment::setPreset(uint8_t command, uint8_t parameter, uint8_t value)
@@ -62,24 +62,18 @@ void LedSegment::loadPreset(LedPreset *preset)
     cmd.delay = preset->Delay();
 }
 
-void LedSegment::zeroIndex()
-{
-    for (uint16_t i = 0; i < sizeof(cmd.indeces) / sizeof(cmd.indeces[0]); i++)
-    {
-        cmd.indeces[i].count = 0;
-        cmd.indeces[i].max = 0;
-    }
-}
-
 void LedSegment::setupCmd()
 {
-    zeroIndex();
+    memset(cmd.indeces, 0, sizeof(cmd.indeces));
     switch (cmd.command)
     {
     case STRIP_RESET:
         break;
     case STRIP_SOLID:
         cmd.indeces[0].max = cmd.repeat;
+        cmd.indeces[1].max = cmd.repeat;
+        cmd.indeces[2].max = cmd.repeat;
+        cmd.indeces[3].max = cmd.repeat;
         break;
     case STRIP_BLINK:
         cmd.indeces[0].max = 2;
@@ -222,10 +216,8 @@ void LedSegment::loop()
 
 void LedSegment::solid()
 {
-    if (cmd.indeces[0].count > 0)
-    {
-        return;
-    }
+    auto preset = getPreset(cmd.command);
+    cmd.color = ledWriter->Color(preset->Red(), preset->Green(), preset->Blue());
 
     for (uint16_t i = begin; i <= end; i++)
     {
@@ -237,10 +229,15 @@ void LedSegment::solid()
 void LedSegment::blink()
 {
     uint32_t color = 0;
-    if (cmd.indeces[0].count == 0)
+    if (cmd.indeces[0].count > 0)
     {
+        auto preset = getPreset(cmd.command);
+        cmd.color = ledWriter->Color(preset->Red(),
+                                     preset->Green(),
+                                     preset->Blue());
         color = cmd.color;
     }
+
     for (uint16_t i = begin; i <= end; i++)
     {
         ledWriter->setPixelColor(i, color);
@@ -273,8 +270,17 @@ bool LedSegment::nextStep()
 
 void LedSegment::colorWipe()
 {
+
     uint16_t i = begin + cmd.indeces[0].count;
-    uint32_t color = (cmd.indeces[1].count) ? cmd.color : 0;
+    uint32_t color = 0;
+    if (cmd.indeces[1].count > 0)
+    {
+        auto preset = getPreset(cmd.command);
+        cmd.color = ledWriter->Color(preset->Red(),
+                                     preset->Green(),
+                                     preset->Blue());
+        color = cmd.color;
+    }
     ledWriter->setPixelColor(i, color);
     ledWriter->show(i, i);
 }
@@ -289,6 +295,10 @@ void LedSegment::cycle()
 
 void LedSegment::rainbow()
 {
+    auto preset = getPreset(cmd.command);
+    cmd.color = ledWriter->Color(preset->Red(),
+                                 preset->Green(),
+                                 preset->Blue());
     for (uint16_t i = begin; i <= end; i++)
     {
         ledWriter->setPixelColor(i, wheel(((i * 256 / count) + cmd.color) & 255));
@@ -298,10 +308,16 @@ void LedSegment::rainbow()
 
 void LedSegment::chase()
 {
-    uint32_t color =
-        (cmd.indeces[0].count == 0) ? cmd.color : 0;
+    uint32_t color = 0;
+    if (cmd.indeces[0].count == 0)
+    {
+        auto preset = getPreset(cmd.command);
+        cmd.color = ledWriter->Color(preset->Red(),
+                                     preset->Green(),
+                                     preset->Blue());
+        color = cmd.color;
+    }
     uint16_t step = cmd.indeces[1].count;
-
     for (uint16_t i = begin + step; i <= end; i += theatreInc)
     {
         ledWriter->setPixelColor(i, color);
@@ -311,10 +327,11 @@ void LedSegment::chase()
 
 void LedSegment::chaseXmas()
 {
+    LedPreset *preset = getPreset(cmd.command);
     uint32_t color =
         (cmd.indeces[0].count == 0)
-            ? ledWriter->Color(128, 0, 0)
-            : ledWriter->Color(0, 128, 0);
+            ? ledWriter->Color(preset->Red(), 0, preset->Blue())
+            : ledWriter->Color(0, preset->Green(), preset->Blue());
     uint16_t step = cmd.indeces[1].count;
     for (uint16_t i = begin + step; i <= end; i += theatreInc)
     {

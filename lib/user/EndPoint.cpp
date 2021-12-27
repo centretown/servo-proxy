@@ -4,40 +4,20 @@
 
 bool EndPoint::process(UserEvent event)
 {
+    if (event == USER_SELECT)
+    {
+        return false;
+    }
+    int16_t direction = (event == USER_PREVIOUS) ? -1 : 1;
     int64_t now = millis();
     int64_t diff = now - last;
     last = now;
-
-    if (diff < 100)
+    if (diff < 200)
     {
-        increment = 10;
+        int16_t factor = 200 / diff;
+        direction *= (1 << factor);
     }
-    else if (diff < 200)
-    {
-        increment = 5;
-    }
-    else if (diff < 500)
-    {
-        increment = 2;
-    }
-    else
-    {
-        increment = 1;
-    }
-
-    int16_t counter = GetCounter();
-    switch (event)
-    {
-    case USER_PREVIOUS:
-        counter -= increment;
-        break;
-    case USER_NEXT:
-        counter += increment;
-        break;
-    default:
-        return false;
-    }
-    SetCounter(counter);
+    SetCounter(GetCounter() + direction);
     return true;
 }
 

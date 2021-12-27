@@ -5,8 +5,6 @@
 #pragma once
 
 #include "base.h"
-// #include <Arduino.h>
-// #include <Adafruit_NeoPixel.h>
 #include "LedWriter.h"
 #include "LedCommand.h"
 #include "LedPreset.h"
@@ -25,7 +23,6 @@ private:
     LedPreset presets[STRIP_LAST - STRIP_FIRST + 1];
     bool nextStep();
     void setupCmd();
-    void zeroIndex();
     void setPreset(uint8_t command, uint8_t parameter, uint8_t value);
     void setPreset(uint8_t command, uint8_t red, uint8_t green, uint8_t blue, uint8_t repeat, uint16_t wait);
     void loadPreset(uint8_t command);
