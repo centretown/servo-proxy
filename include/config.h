@@ -38,7 +38,7 @@ extern OledDisplay oled;
 
 #ifdef USE_LEDSTRIP_LIB
 #include "LedStrips.h"
-#include "LedEndPoint.h"
+#include "LedMenus.h"
 
 #ifdef __AVR__
 #include <avr/power.h>
@@ -60,7 +60,6 @@ extern Adafruit_NeoPixel *strips[];
 extern size_t ledStripCount;
 
 extern LedStrips led;
-extern LedEndPoint ledPoint;
 
 #endif // USE_LEDSTRIP_LIB
 

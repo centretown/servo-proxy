@@ -8,7 +8,7 @@ void addExit(Menu *menu)
 
 void addEndpoints(Menu *menu,
                   const char *labels[], size_t count,
-                  void (*endpoint)(Menu *))
+                  EndPoint *endpoint)
 {
     for (size_t i = 0; i < count; i++)
     {
@@ -20,7 +20,7 @@ void addEndpoints(Menu *menu,
 void addEndpoints(Menu *menu,
                   const char *labels[], size_t count,
                   const char *parms[], size_t parmsCount,
-                  void (*endpoint)(Menu *), void (*editor)(Menu *))
+                  EndPoint *endpoint, EndPoint *editor)
 {
     Menu *sub;
     for (size_t i = 0; i < count; i++)

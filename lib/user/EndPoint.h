@@ -17,7 +17,7 @@ public:
     EndPoint() { last = millis(); }
     ~EndPoint() {}
 
-    virtual void setup(uint8_t i, uint8_t c, uint8_t p);
+    virtual void setup(uint8_t index, uint8_t command, uint8_t parameter);
     uint8_t GetIndex() { return index; }
     void SetIndex(uint8_t i) { index = i; }
     uint8_t GetCommand() { return command; }

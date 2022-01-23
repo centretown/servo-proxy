@@ -1,73 +1,48 @@
 // Copyright (c) 2021 Dave Marsh. See LICENSE.
 
+#pragma once
+
 #include "base.h"
+#include "Preset.h"
 
-enum LedParameter
-{
-    STRIP_PRESET_RED,
-    STRIP_PRESET_GREEN,
-    STRIP_PRESET_BLUE,
-    STRIP_PRESET_REPEAT,
-    STRIP_PRESET_DELAY,
-    STRIP_PRESET_COUNT,
-    STRIP_PRESET_FIRST = STRIP_PRESET_RED
-};
-
-class LedPreset
+template <class T>
+class LedPreset : public Preset
 {
 private:
-    uint16_t preset[STRIP_PRESET_COUNT];
+    const char *label;
+    T value;
+    T low;
+    T high;
 
 public:
-    LedPreset() {}
-    ~LedPreset() {}
-    void Set(uint8_t red, uint8_t green, uint8_t blue,
-             uint8_t repeat, uint16_t delay)
-    {
-        preset[STRIP_PRESET_RED] = red;
-        preset[STRIP_PRESET_GREEN] = green;
-        preset[STRIP_PRESET_BLUE] = blue;
-        preset[STRIP_PRESET_REPEAT] = repeat;
-        preset[STRIP_PRESET_DELAY] = delay;
-    }
+    LedPreset(const char *label,
+              T value,
+              T low,
+              T high) : label(label), value(value), low(low), high(high) {}
 
-    void Set(uint8_t i, uint8_t value)
-    {
-        if (i < STRIP_PRESET_COUNT)
-            preset[i] = value;
-    }
+    const char *Label() { return label; }
+    void Set(int16_t v) { value = (T)v; }
+    int16_t Get() { return (int16_t)value; }
+    int16_t Low() { return (int16_t)low; }
+    int16_t High() { return (int16_t)high; }
+};
 
-    uint16_t Get(uint8_t i)
-    {
-        if (i < STRIP_PRESET_COUNT)
-            return preset[i];
-        return 0;
-    }
+class ColorPreset : public LedPreset<uint8_t>
+{
+public:
+    ColorPreset(const char *label,
+                uint8_t value,
+                uint8_t low = 0,
+                uint8_t high = 0xff) : LedPreset(label, value, low, high) {}
+    ~ColorPreset() {}
+};
 
-    uint16_t Red()
-    {
-        return preset[STRIP_PRESET_RED];
-    }
-    uint16_t Green()
-    {
-        return preset[STRIP_PRESET_GREEN];
-    }
-    uint16_t Blue()
-    {
-        return preset[STRIP_PRESET_BLUE];
-    }
-    uint16_t Repeat()
-    {
-        return preset[STRIP_PRESET_REPEAT];
-    }
-    uint16_t Delay()
-    {
-        return preset[STRIP_PRESET_DELAY];
-    }
-
-    void SetRed(uint16_t d) { preset[STRIP_PRESET_RED] = d; }
-    void SetGreen(uint16_t d) { preset[STRIP_PRESET_GREEN] = d; }
-    void SetBlue(uint16_t d) { preset[STRIP_PRESET_BLUE] = d; }
-    void SetRepeat(uint16_t d) { preset[STRIP_PRESET_REPEAT] = d; }
-    void SetDelay(uint16_t d) { preset[STRIP_PRESET_DELAY] = d; }
+class CountPreset : public LedPreset<uint16_t>
+{
+public:
+    CountPreset(const char *label,
+                uint16_t value,
+                uint16_t low = 0,
+                uint16_t high = 0xffff) : LedPreset(label, value, low, high) {}
+    ~CountPreset() {}
 };

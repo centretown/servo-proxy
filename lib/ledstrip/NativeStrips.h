@@ -10,11 +10,11 @@
 class NativeStrips : public LedWriter
 {
 private:
-    LedSegment segments[4];
+    LedSegment *segments;
     size_t nSegments = 0;
 
 public:
-    NativeStrips(/* args */);
+    NativeStrips(LedSegment *segments, size_t nSegments);
     ~NativeStrips();
     virtual void setPixelColor(uint16_t n, uint32_t c);
     virtual void show(uint16_t begin, uint16_t end);

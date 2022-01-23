@@ -27,7 +27,7 @@ private:
     uint8_t index = 0;    //current node
     uint8_t sequence = 0; //current index within node
 
-    void (*endpoint)(Menu *) = NULL;
+    EndPoint *endpoint = NULL;
     Menu **nodes = NULL;
 
     static char route[ROUTESIZE];
@@ -39,11 +39,10 @@ private:
     static Menu *navigate(UserEvent event);
 
 public:
-    Menu(const char *label,
-         void (*endpoint)(Menu *) = NULL, uint8_t length = 0);
+    Menu(const char *label, EndPoint *point = NULL, uint8_t length = 0);
     Menu(const char *label, uint8_t length);
     Menu(const char *label, uint8_t length,
-         uint8_t range, void (*func)(Menu *) = NULL);
+         uint8_t range, EndPoint *point = NULL);
     ~Menu();
 
     Menu *Add(Menu *item);
@@ -79,12 +78,12 @@ extern Menu rootMenu;
 void addExit(Menu *menu);
 void addEndpoints(Menu *menu,
                   const char *text[], size_t textCount,
-                  void (*endpoint)(Menu *) = NULL);
+                  EndPoint *endpoint = NULL);
 void addEndpoints(Menu *menu,
                   const char *text[], size_t textCount,
                   const char *parms[], size_t parmsCount,
-                  void (*endpoint)(Menu *), void (*editor)(Menu *));
+                  EndPoint *endpoint, EndPoint *editor);
 void addMenus(Menu *menu,
               const char *text[], size_t textCount,
               size_t length,
-              void (*endpoint)(Menu *));
+              EndPoint *endpoint);

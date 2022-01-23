@@ -105,7 +105,8 @@ void OledDisplay::drawMenu(const char *heading, const char *label)
     display.display();
 }
 
-void OledDisplay::drawMenu(const char *heading, const char *label, int16_t value)
+void OledDisplay::drawMenu(const char *heading, const char *label,
+                           int16_t value, int16_t max, int16_t min)
 {
     reset();
     display.setTextColor(SSD1306_WHITE);
@@ -126,7 +127,7 @@ void OledDisplay::drawMenu(const char *heading, const char *label, int16_t value
 
     int16_t w = display.width();
     int16_t dh = display.height();
-    int16_t h = (value * dh) / 255;
+    int16_t h = (value * dh) / (max - min);
     int16_t y = dh - h;
 
     display.drawRect(w - 20, y, 20, h, SSD1306_WHITE);

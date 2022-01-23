@@ -4,7 +4,7 @@
 
 #include "NativeStrips.h"
 
-NativeStrips::NativeStrips(/* args */)
+NativeStrips::NativeStrips(LedSegment *segs, size_t nSegs) : segments(segs), nSegments(nSegs)
 {
 }
 

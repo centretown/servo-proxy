@@ -46,8 +46,10 @@ ServoServe servoServe(pServos, expanderPins, expanderPinCount);
 #endif // USE_SERVO_LIB
 
 #ifdef USE_OLED_LIB
+#include "OledWriter.h"
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 OledDisplay oled(display, SCREEN_ADDRESS);
+OledWriter oledWriter(oled);
 #endif // USE_OLED_LIB
 
 #ifdef USE_LEDSTRIP_LIB
@@ -77,7 +79,7 @@ Adafruit_NeoPixel *strips[] = {
 size_t ledStripCount = sizeof(strips) / sizeof(strips[0]);
 
 LedStrips led(strips, ledStripCount, segs, ledSegmentCount);
-LedEndPoint ledPoint(led);
+LedMenus ledMenus(segs, ledSegmentCount);
 #endif // USE_LEDSTRIP_LIB
 
 #ifdef USE_TOUCH_LIB
@@ -85,8 +87,10 @@ TouchSensor touch(TOUCH_SENSOR_PIN);
 #endif // USE_TOUCH_LIB
 
 #if defined(USE_ROTARY_LIB)
+#include "RotaryReader.h"
 RotaryEncoder enc(ROTARY_A, ROTARY_B, RotaryEncoder::LatchMode::TWO03);
 Rotary rotary(enc, ROTARY_BUTTON);
+RotaryReader rotaryReader(rotary);
 #endif // USE_ROTARY_LIB
 
 // for ESP32 LED_BUILTIN is defined as static const uint8_t LED_BUILTIN = 2;
@@ -107,8 +111,8 @@ char testBuffer[81] = {0};
 MicroTerm usrTerm(Serial, usrBuffer, sizeof(usrBuffer));
 CameraListener camTerm(Serial1);
 
-#include <menus.h>
-
+//#include <menus.h>
+#include "LedMenus.h"
 void setup()
 {
   Serial.begin(115200);
@@ -127,7 +131,7 @@ void setup()
 
 #if defined(USE_LEDSTRIP_LIB)
   led.setup();
-  initLedMenu();
+  ledMenus.initLedMenu(ledSegmentCount);
   Serial.print(F("led strip setup: "));
   Serial.print(led.numPixels());
   Serial.println(F(" pixels defined."));
@@ -135,7 +139,7 @@ void setup()
 
 #if defined(USE_SERVO_LIB)
   servoServe.setup();
-  initServoMenu();
+  // initServoMenu();
   Serial.println(F("servo setup"));
   Serial.println(F("servo menu setup"));
 #endif

@@ -39,7 +39,6 @@ void LedStrips::setup()
     ledStrip *p = strips + i;
 
     p->strip->begin();
-    p->strip->setBrightness(50);
     p->strip->clear();
     p->strip->show();
 
@@ -53,14 +52,14 @@ void LedStrips::setup()
 
   for (size_t i = 0; i < nSegments; i++)
   {
-    segments[i].setup(this);
+    segments[i].setWriter(this);
     segments[i].reset();
     Serial.print("segment ");
     Serial.print(i);
     Serial.print(" begin ");
-    Serial.print(segments[i].begin);
+    Serial.print(segments[i].Begin());
     Serial.print(" end ");
-    Serial.println(segments[i].end);
+    Serial.println(segments[i].End());
   }
 }
 
@@ -103,7 +102,7 @@ int LedStrips::process(const char *buf)
   {
     return ERR_STRIP_INDEX;
   }
-  segments[segment].start(command, parms, nitems - 2);
+  segments[segment].start((LedOperator)command, parms, nitems - 2);
   return ERR_STRIP_OK;
 }
 
@@ -111,7 +110,7 @@ int LedStrips::loop()
 {
   for (uint8_t i = 0; i < nSegments; i++)
   {
-    segments[i].loop();
+    segments[i].tick();
   }
   return ERR_STRIP_OK;
 }

@@ -158,7 +158,20 @@ Menu *Menu::Select()
     {
         state = (state == MENU_NAVIGATE) ? MENU_RUN : MENU_EDIT;
 
-        node->endpoint(node);
+        // node->endpoint(node);
+        if (state == MENU_RUN)
+        {
+            uint8_t parameter = menu->Index();
+            uint8_t command = menu->Ancestor(1)->Index();
+            uint8_t index = menu->Ancestor(2)->Index();
+            SetPoint(node->endpoint);
+            point->setup(index, command, parameter);
+            point->start();
+        }
+        else
+        {
+            //
+        }
 
         if (node->count == 0)
         {
@@ -181,10 +194,10 @@ Menu *Menu::Select()
 }
 
 Menu::Menu(const char *label,
-           void (*func)(Menu *),
+           EndPoint *point,
            uint8_t length) : label(label), length(length), range(1)
 {
-    endpoint = func;
+    endpoint = point;
 }
 
 Menu::Menu(const char *label,
@@ -202,13 +215,13 @@ Menu::Menu(const char *label,
 
 Menu::Menu(const char *label,
            uint8_t length,
-           uint8_t range, void (*func)(Menu *)) : label(label), length(length), range(range)
+           uint8_t range, EndPoint *point) : label(label), length(length), range(range)
 {
     if (length > 0)
     {
         nodes = (Menu **)malloc(sizeof(Menu *) * length);
     }
-    endpoint = func;
+    endpoint = point;
 }
 
 Menu::~Menu()
