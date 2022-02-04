@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <Arduino.h>
+#include "base.h"
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_SSD1306.h>
@@ -56,7 +56,7 @@ public:
     void drawText(const char *text, uint8_t x = 0, uint8_t y = 0, uint8_t size = 2, uint16_t color = SSD1306_WHITE);
     void drawIcon(IconID, int16_t, int16_t);
     void drawMenu(const char *heading, const char *label);
-    void drawMenu(const char *heading, const char *label, int16_t value, int16_t max = 255, int16_t min = 0);
+    void drawMenu(const char *heading, const char *label, preset_base value, preset_base max = 255);
 
     void reset();
     int process(const char *buf);

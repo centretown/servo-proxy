@@ -52,8 +52,8 @@ void LedStrips::setup()
 
   for (size_t i = 0; i < nSegments; i++)
   {
-    segments[i].setWriter(this);
-    segments[i].reset();
+    segments[i].SetWriter(this);
+    segments[i].Reset();
     Serial.print("segment ");
     Serial.print(i);
     Serial.print(" begin ");
@@ -102,7 +102,7 @@ int LedStrips::process(const char *buf)
   {
     return ERR_STRIP_INDEX;
   }
-  segments[segment].start((LedOperator)command, parms, nitems - 2);
+  segments[segment].Start((LedOperator)command, parms, nitems - 2);
   return ERR_STRIP_OK;
 }
 
@@ -110,7 +110,7 @@ int LedStrips::loop()
 {
   for (uint8_t i = 0; i < nSegments; i++)
   {
-    segments[i].tick();
+    segments[i].Tick();
   }
   return ERR_STRIP_OK;
 }

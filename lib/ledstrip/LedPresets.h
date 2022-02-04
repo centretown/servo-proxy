@@ -3,44 +3,79 @@
 #pragma once
 
 #include "base.h"
-#include "LedPreset.h"
+#include "ColorPreset.h"
+#include "CountPreset.h"
+#include "DimmerPreset.h"
+#include "TimerPreset.h"
 
 enum LedPropertyID
 {
+    STRIP_PRESET_DIMMER,
     STRIP_PRESET_RED,
     STRIP_PRESET_GREEN,
     STRIP_PRESET_BLUE,
+    STRIP_PRESET_PULSE,
+    STRIP_PRESET_PULSE_CYCLE,
+    STRIP_PRESET_BG_DIMMER,
+    STRIP_PRESET_BG_RED,
+    STRIP_PRESET_BG_GREEN,
+    STRIP_PRESET_BG_BLUE,
     STRIP_PRESET_REPEAT,
-    STRIP_PRESET_DELAY,
-    STRIP_PRESET_RED1,
-    STRIP_PRESET_GREEN1,
-    STRIP_PRESET_BLUE1,
-    STRIP_PRESET_REPEAT1,
-    STRIP_PRESET_DELAY1,
+    STRIP_PRESET_TIMER,
+    STRIP_PRESET_TIMER_CYCLE,
     STRIP_PRESET_COUNT,
-    STRIP_PRESET_FIRST = STRIP_PRESET_RED,
 };
 
 enum LedPropertyFlag
 {
-    STRIP_PRESET_FLAG_RED = 0x0001,
-    STRIP_PRESET_FLAG_GREEN = 0x0002,
-    STRIP_PRESET_FLAG_BLUE = 0x0004,
-    STRIP_PRESET_FLAG_REPEAT = 0x0008,
-    STRIP_PRESET_FLAG_DELAY = 0x010,
-    STRIP_PRESET_FLAG_RED1 = 0x0020,
-    STRIP_PRESET_FLAG_GREEN1 = 0x0040,
-    STRIP_PRESET_FLAG_BLUE1 = 0x0080,
-    STRIP_PRESET_FLAG_REPEAT1 = 0x0100,
-    STRIP_PRESET_FLAG_DELAY1 = 0x0200,
-    STRIP_PRESET_FLAG_COLOR = STRIP_PRESET_FLAG_RED | STRIP_PRESET_FLAG_GREEN | STRIP_PRESET_FLAG_BLUE,
+    STRIP_PRESET_FLAG_DIMMER = 0x0001,
+    STRIP_PRESET_FLAG_RED = 0x0002,
+    STRIP_PRESET_FLAG_GREEN = 0x0004,
+    STRIP_PRESET_FLAG_BLUE = 0x0008,
+    STRIP_PRESET_FLAG_PULSE = 0x010,
+    STRIP_PRESET_FLAG_PULSE_CYCLE = 0x0020,
+    STRIP_PRESET_FLAG_BG_DIMMER = 0x0040,
+    STRIP_PRESET_FLAG_BG_RED = 0x0080,
+    STRIP_PRESET_FLAG_BG_GREEN = 0x0100,
+    STRIP_PRESET_FLAG_BG_BLUE = 0x0200,
+    STRIP_PRESET_FLAG_REPEAT = 0x0400,
+    STRIP_PRESET_FLAG_TIMER = 0x0800,
+    STRIP_PRESET_FLAG_TIMER_CYCLE = 0x1000,
+    STRIP_PRESET_FLAG_COLOR = STRIP_PRESET_FLAG_DIMMER | STRIP_PRESET_FLAG_RED |
+                              STRIP_PRESET_FLAG_GREEN | STRIP_PRESET_FLAG_BLUE,
+    STRIP_PRESET_FLAG_BG = STRIP_PRESET_FLAG_BG_DIMMER | STRIP_PRESET_FLAG_BG_RED |
+                           STRIP_PRESET_FLAG_BG_GREEN | STRIP_PRESET_FLAG_BG_BLUE,
+};
+
+enum LedText
+{
+    LED_DIMMER,
+    LED_RED,
+    LED_GREEN,
+    LED_BLUE,
+    LED_PULSE,
+    LED_REPEAT,
+    LED_TIMER,
 };
 
 class LedPresets
 {
 private:
-    // uint16_t preset[STRIP_PRESET_COUNT];
     Preset *presets[STRIP_PRESET_COUNT];
+
+private:
+    static const char *Labels[];
+
+public:
+    inline static const char *Label(LedText txt)
+    {
+        return Labels[txt];
+    }
+
+    inline Preset *GetPreset(LedPropertyID id)
+    {
+        return presets[id];
+    }
 
 public:
     LedPresets();
@@ -48,11 +83,7 @@ public:
     void Set(uint8_t red, uint8_t green, uint8_t blue,
              uint8_t repeat, uint16_t delay);
 
-    void Set(uint8_t i, uint16_t value)
-    {
-        if (i < STRIP_PRESET_COUNT)
-            presets[i]->Set(value);
-    }
+    void Set(uint8_t i, uint16_t value);
 
     uint16_t Get(uint8_t i)
     {
@@ -61,30 +92,56 @@ public:
         return 0;
     }
 
-    uint16_t Red()
+    uint8_t Dimmer()
     {
-        return presets[STRIP_PRESET_RED]->Get();
+        return presets[STRIP_PRESET_DIMMER]->Filtered();
     }
-    uint16_t Green()
+    uint8_t Red()
     {
-        return presets[STRIP_PRESET_GREEN]->Get();
+        return presets[STRIP_PRESET_RED]->Filtered();
     }
-    uint16_t Blue()
+    uint8_t Green()
     {
-        return presets[STRIP_PRESET_BLUE]->Get();
+        return presets[STRIP_PRESET_GREEN]->Filtered();
     }
-    uint16_t Repeat()
+    uint8_t Blue()
+    {
+        return presets[STRIP_PRESET_BLUE]->Filtered();
+    }
+    uint8_t Pulse()
+    {
+        return presets[STRIP_PRESET_PULSE]->Get();
+    }
+    uint8_t PulseCycle()
+    {
+        return presets[STRIP_PRESET_PULSE_CYCLE]->Get();
+    }
+    uint8_t Timer()
+    {
+        return presets[STRIP_PRESET_TIMER]->Get();
+    }
+    uint8_t TimerCycle()
+    {
+        return presets[STRIP_PRESET_TIMER_CYCLE]->Get();
+    }
+    uint8_t DimmerBG()
+    {
+        return presets[STRIP_PRESET_BG_DIMMER]->Filtered();
+    }
+    uint8_t RedBG()
+    {
+        return presets[STRIP_PRESET_BG_RED]->Filtered();
+    }
+    uint8_t GreenBG()
+    {
+        return presets[STRIP_PRESET_BG_GREEN]->Filtered();
+    }
+    uint8_t BlueBG()
+    {
+        return presets[STRIP_PRESET_BG_BLUE]->Filtered();
+    }
+    uint8_t Repeat()
     {
         return presets[STRIP_PRESET_REPEAT]->Get();
     }
-    uint16_t Delay()
-    {
-        return presets[STRIP_PRESET_DELAY]->Get();
-    }
-
-    void SetRed(uint16_t d) { presets[STRIP_PRESET_RED]->Set(d); }
-    void SetGreen(uint16_t d) { presets[STRIP_PRESET_GREEN]->Set(d); }
-    void SetBlue(uint16_t d) { presets[STRIP_PRESET_BLUE]->Set(d); }
-    void SetRepeat(uint16_t d) { presets[STRIP_PRESET_REPEAT]->Set(d); }
-    void SetDelay(uint16_t d) { presets[STRIP_PRESET_DELAY]->Set(d); }
 };

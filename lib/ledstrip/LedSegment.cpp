@@ -2,69 +2,102 @@
 
 #include "LedSegment.h"
 
-LedSegment::Entry LedSegment::entry_table[] = {
+LedOperation LedSegment::operations[] = {
     {
         "Solid",
-        SolidSetup,
-        Solid,
-        STRIP_PRESET_FLAG_COLOR | STRIP_PRESET_FLAG_REPEAT,
+        solidSetup,
+        solid,
+        STRIP_PRESET_FLAG_COLOR | STRIP_PRESET_FLAG_TIMER,
     },
     {
         "Blink",
-        BlinkSetup,
-        Blink,
+        blinkSetup,
+        blink,
         STRIP_PRESET_FLAG_COLOR |
-            STRIP_PRESET_FLAG_DELAY | STRIP_PRESET_FLAG_REPEAT,
+            STRIP_PRESET_FLAG_PULSE | STRIP_PRESET_FLAG_TIMER,
     },
     {
         "Wipe",
-        ColorWipeSetup,
-        ColorWipe,
-        STRIP_PRESET_FLAG_COLOR |
-            STRIP_PRESET_FLAG_DELAY | STRIP_PRESET_FLAG_REPEAT,
+        colorWipeSetup,
+        colorWipe,
+        STRIP_PRESET_FLAG_COLOR | STRIP_PRESET_FLAG_BG |
+            STRIP_PRESET_FLAG_PULSE | STRIP_PRESET_FLAG_TIMER,
     },
     {
         "Cycle",
-        CycleSetup,
-        Cycle,
-        STRIP_PRESET_FLAG_COLOR |
-            STRIP_PRESET_FLAG_DELAY | STRIP_PRESET_FLAG_REPEAT,
+        cycleSetup,
+        cycle,
+        STRIP_PRESET_FLAG_COLOR | STRIP_PRESET_FLAG_BG |
+            STRIP_PRESET_FLAG_PULSE_CYCLE | STRIP_PRESET_FLAG_TIMER_CYCLE,
     },
     {
         "Rainbow",
-        RainbowSetup,
-        Rainbow,
+        rainbowSetup,
+        rainbow,
         STRIP_PRESET_FLAG_COLOR |
-            STRIP_PRESET_FLAG_DELAY | STRIP_PRESET_FLAG_REPEAT,
+            STRIP_PRESET_FLAG_PULSE | STRIP_PRESET_FLAG_TIMER,
     },
     {
         "Chase",
-        ChaseSetup,
-        Chase,
+        chaseSetup,
+        chase,
         STRIP_PRESET_FLAG_COLOR |
-            STRIP_PRESET_FLAG_DELAY | STRIP_PRESET_FLAG_REPEAT,
+            STRIP_PRESET_FLAG_PULSE | STRIP_PRESET_FLAG_TIMER,
     },
     {
         "Cyclechase",
-        ChaseCycleSetup,
-        ChaseCycle,
+        chaseCycleSetup,
+        chaseCycle,
         STRIP_PRESET_FLAG_COLOR |
-            STRIP_PRESET_FLAG_DELAY | STRIP_PRESET_FLAG_REPEAT,
+            STRIP_PRESET_FLAG_PULSE_CYCLE | STRIP_PRESET_FLAG_TIMER_CYCLE,
     },
     {
         "Xmas",
-        ChaseXmasSetup,
-        ChaseXmas,
+        chaseXmasSetup,
+        chaseXmas,
         STRIP_PRESET_FLAG_COLOR |
-            STRIP_PRESET_FLAG_DELAY | STRIP_PRESET_FLAG_REPEAT,
+            STRIP_PRESET_FLAG_PULSE | STRIP_PRESET_FLAG_TIMER,
     },
     {
         "Reset",
         nop,
-        Reset,
+        reset,
         0,
     },
 };
+
+uint8_t LedSegment::GetPresetCount(LedOperator op)
+{
+    uint8_t count = 0;
+    LedOperation &operation = operations[op];
+    for (uint8_t id = 0; id < STRIP_PRESET_COUNT; id++)
+    {
+        if (operation.HasPreset(id))
+        {
+            count++;
+        }
+    }
+    return count;
+}
+
+Preset *LedSegment::GetPreset(LedOperator op, uint8_t index)
+{
+    LedOperation &operation = operations[op];
+    uint8_t countDown = index + 1;
+    uint16_t id = 0;
+    while (1)
+    {
+        if (operation.HasPreset(id))
+        {
+            if (--countDown == 0)
+            {
+                return presets.GetPreset((LedPropertyID)id);
+            }
+        }
+        id++;
+    }
+    return NULL;
+}
 
 void LedSegment::Start(LedOperator op)
 {
@@ -75,7 +108,7 @@ void LedSegment::Start(LedOperator op)
     }
     current = op;
     zeroCounters();
-    entry_table[current].setup(this);
+    operations[current].setup(this);
 }
 
 void LedSegment::Start(LedOperator op, const unsigned *parms, size_t nparms)
@@ -94,12 +127,12 @@ void LedSegment::Start(LedOperator op, const unsigned *parms, size_t nparms)
 
     if (nparms > 3)
     {
-        presets.SetDelay(parms[3]);
+        presets.Set(STRIP_PRESET_PULSE, parms[3]);
     }
 
     if (nparms > 4)
     {
-        presets.SetRepeat(parms[4]);
+        presets.Set(STRIP_PRESET_REPEAT, parms[4]);
     }
 
     Start(op);
@@ -118,14 +151,14 @@ void LedSegment::Tick()
         return;
     }
 
-    entry_table[current].tick(this);
+    operations[current].tick(this);
 
     if (!nextStep())
     {
         current = STRIP_RESET;
     }
 
-    next = now + presets.Delay();
+    next = now + presets.Pulse();
 }
 
 bool LedSegment::nextStep()
@@ -194,7 +227,7 @@ void LedSegment::blink()
 
 void LedSegment::wipeSetup()
 {
-    counters[0].max = count();
+    counters[0].max = pixelCount;
     counters[1].max = 2;
     counters[2].max = presets.Repeat();
 }
@@ -215,7 +248,7 @@ void LedSegment::wipe()
 
 void LedSegment::cycleSetup()
 {
-    counters[0].max = count();
+    counters[0].max = pixelCount;
     counters[1].max = 256;
     counters[2].max = presets.Repeat();
 }
@@ -238,10 +271,9 @@ void LedSegment::rainbow()
     uint32_t color = ledWriter->Color(presets.Red(),
                                       presets.Green(),
                                       presets.Blue());
-    uint16_t pixCount = count();
     for (uint16_t i = begin; i <= end; i++)
     {
-        ledWriter->setPixelColor(i, wheel(((i * 256 / pixCount) + color) & 255));
+        ledWriter->setPixelColor(i, wheel(((i * 256 / pixelCount) + color) & 255));
     }
     ledWriter->show(begin, end);
 }

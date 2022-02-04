@@ -15,13 +15,15 @@ public:
     OledWriter(OledDisplay &oled) : oled(oled) {}
     ~OledWriter() {}
 
-    virtual void write(const char *heading, const char *label)
+    virtual void Write(const char *heading, const char *label)
     {
         oled.drawMenu(heading, label);
     }
-    virtual void write(const char *heading, const char *label, int16_t value)
+
+    virtual void Write(const char *heading, const char *label,
+                       preset_base value, preset_base high)
     {
-        oled.drawMenu(heading, label, value);
+        oled.drawMenu(heading, label, value, high);
     }
 };
 

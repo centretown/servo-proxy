@@ -6,29 +6,25 @@
 
 #include "Menu.h"
 
+#include "LedSegment.h"
+#include "LedPresets.h"
 #include "LedEndPoint.h"
-
-extern const char *ledParmsText[];
-extern const size_t ledParmsCount;
-extern const char *ledSubText[];
-extern const size_t ledSubLength;
 
 void printFree();
 
 class LedMenus
 {
 private:
+    LedSegment *segments;
+    size_t segCount = 0;
     EndPoint *endPoint = NULL;
-
-    static const char *ledParmsText[];
-    static const size_t ledParmsCount;
-    static const char *ledSubText[];
-    static const size_t ledSubLength;
 
 public:
     LedMenus(LedSegment *segments, size_t segCount);
     ~LedMenus();
 
-    void addLedSubMenu(Menu *menu, size_t segCount);
-    void initLedMenu(size_t segCount);
+    void Build(const char *label);
+
+private:
+    void addMenus(Menu *menu);
 };

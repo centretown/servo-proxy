@@ -8,19 +8,18 @@
 
 enum LedOperator
 {
-    STRIP_SOLID,         // solid light
-    STRIP_BLINK,         // blink
-    STRIP_WIPE,          // light sequentially
-    STRIP_CYCLE,         // cycle thru colors
-    STRIP_RAINBOW,       // visible spectrum across
-    STRIP_CHASE,         // every 3rd light on and off
-    STRIP_CHASE_CYCLE,   // chase combined with cycle
-    STRIP_CHASE_XMAS,    // chase combined with xmas
-    STRIP_RESET,         // reset to blank
-    STRIP_NOP,           // do nothing quickly
-    STRIP_OUT_OF_BOUNDS, // too big
-    STRIP_FIRST = STRIP_SOLID,
-    STRIP_LAST = STRIP_CHASE_XMAS
+    STRIP_SOLID,       // solid light
+    STRIP_BLINK,       // blink
+    STRIP_WIPE,        // light sequentially
+    STRIP_CYCLE,       // cycle thru colors
+    STRIP_RAINBOW,     // visible spectrum across
+    STRIP_CHASE,       // every 3rd light on and off
+    STRIP_CHASE_CYCLE, // chase combined with cycle
+    STRIP_CHASE_XMAS,  // chase red/green
+    STRIP_RESET,       // reset to blank
+    STRIP_NOP,         // do nothing promptly
+    STRIP_OPERATOR_COUNT = STRIP_RESET + 1,
+    STRIP_OUT_OF_BOUNDS = STRIP_NOP + 1, // too big
 };
 
 #define MAX_WAIT 0xffff
@@ -32,39 +31,69 @@ typedef struct
     uint16_t max = 0;
 } led_index;
 
+class LedSegment;
+
+class LedOperation
+{
+public:
+    const char *Label;
+    void (*setup)(LedSegment *cmd);
+    void (*tick)(LedSegment *cmd);
+    uint16_t presetFlags;
+    inline bool HasPreset(uint16_t index)
+    {
+        return presetFlags & (1 << index);
+    }
+};
+
 class LedSegment
 {
 private:
     uint16_t begin;
     uint16_t end;
+    uint16_t pixelCount = 0;
 
     LedPresets presets;
     led_index counters[4];
     uint8_t theatreInc = 3;
     uint64_t next = 0L;
     LedOperator current = STRIP_NOP;
+    LedWriter *ledWriter;
+
+private:
+    static LedOperation operations[];
+
+    static inline bool isOperator(LedOperator op)
+    {
+        return (op < STRIP_OUT_OF_BOUNDS);
+    }
+
+    static void reset(LedSegment *s) { s->Reset(); }
+    static void solidSetup(LedSegment *s) { s->solidSetup(); }
+    static void solid(LedSegment *s) { s->solid(); }
+    static void blinkSetup(LedSegment *s) { s->blinkSetup(); }
+    static void blink(LedSegment *s) { s->blink(); }
+    static void colorWipeSetup(LedSegment *s) { s->wipeSetup(); }
+    static void colorWipe(LedSegment *s) { s->wipe(); }
+    static void cycleSetup(LedSegment *s) { s->cycleSetup(); }
+    static void cycle(LedSegment *s) { s->cycle(); }
+    static void rainbowSetup(LedSegment *s) { s->rainbowSetup(); }
+    static void rainbow(LedSegment *s) { s->rainbow(); }
+    static void chaseSetup(LedSegment *s) { s->chaseSetup(); }
+    static void chase(LedSegment *s) { s->chase(); }
+    static void chaseCycleSetup(LedSegment *s) { s->chaseCycleSetup(); }
+    static void chaseCycle(LedSegment *s) { s->chaseCycle(); }
+    static void chaseXmasSetup(LedSegment *s) { s->chaseXmasSetup(); }
+    static void chaseXmas(LedSegment *s) { s->chaseXmas(); }
 
 public:
-    static void Reset(LedSegment *s) { s->Reset(); }
-    static void SolidSetup(LedSegment *s) { s->solidSetup(); }
-    static void Solid(LedSegment *s) { s->solid(); }
-    static void BlinkSetup(LedSegment *s) { s->blinkSetup(); }
-    static void Blink(LedSegment *s) { s->blink(); }
-    static void ColorWipeSetup(LedSegment *s) { s->wipeSetup(); }
-    static void ColorWipe(LedSegment *s) { s->wipe(); }
-    static void CycleSetup(LedSegment *s) { s->cycleSetup(); }
-    static void Cycle(LedSegment *s) { s->cycle(); }
-    static void RainbowSetup(LedSegment *s) { s->rainbowSetup(); }
-    static void Rainbow(LedSegment *s) { s->rainbow(); }
-    static void ChaseSetup(LedSegment *s) { s->chaseSetup(); }
-    static void Chase(LedSegment *s) { s->chase(); }
-    static void ChaseCycleSetup(LedSegment *s) { s->chaseCycleSetup(); }
-    static void ChaseCycle(LedSegment *s) { s->chaseCycle(); }
-    static void ChaseXmasSetup(LedSegment *s) { s->chaseXmasSetup(); }
-    static void ChaseXmas(LedSegment *s) { s->chaseXmas(); }
+    inline static const char *Label(LedOperator op) { return operations[op].Label; }
+    inline static uint8_t GetOperationCount() { return STRIP_OPERATOR_COUNT; }
+    inline static LedOperation &GetOperation(LedOperator op) { return operations[op]; }
+    static uint8_t GetPresetCount(LedOperator op);
 
 public:
-    LedSegment(uint16_t b, uint16_t e) : begin(b), end(e) {}
+    LedSegment(uint16_t b, uint16_t e) : begin(b), end(e) { pixelCount = end - begin + 1; }
     ~LedSegment() {}
     void SetWriter(LedWriter *writer) { ledWriter = writer; }
     void Start(LedOperator op);
@@ -73,31 +102,9 @@ public:
     void Reset();
     uint16_t Begin() { return begin; }
     uint16_t End() { return end; }
-    LedPresets &Presets() { return presets; }
+    Preset *GetPreset(LedOperator op, uint8_t idx);
 
 private:
-    LedWriter *ledWriter;
-
-    class Entry
-    {
-    public:
-        const char *Label;
-        void (*setup)(LedSegment *cmd);
-        void (*tick)(LedSegment *cmd);
-        uint16_t presetFlags;
-        inline bool HasPreset(uint8_t index)
-        {
-            return (1 << index) & presetFlags;
-        }
-    };
-
-    static Entry entry_table[];
-
-    static inline bool isOperator(LedOperator op)
-    {
-        return (op < STRIP_OUT_OF_BOUNDS);
-    }
-
     static void nop(LedSegment *cmd) {}
 
     uint32_t wheel(uint8_t pos);
@@ -118,6 +125,5 @@ private:
     void chaseCycle();
     void chaseXmasSetup();
     void chaseXmas();
-    inline uint16_t count() { return end - begin + 1; }
     bool nextStep();
 };

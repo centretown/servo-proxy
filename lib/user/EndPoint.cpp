@@ -2,26 +2,38 @@
 
 #include "EndPoint.h"
 
-bool EndPoint::process(UserEvent event)
+bool EndPoint::Process(UserEvent event)
 {
     if (event == USER_SELECT)
     {
         return false;
     }
-    int16_t direction = (event == USER_PREVIOUS) ? -1 : 1;
-    int64_t now = millis();
-    int64_t diff = now - last;
+    preset_base direction = (event == USER_PREVIOUS) ? -1 : 1;
+    unsigned long now = millis();
+    unsigned long diff = now - last;
     last = now;
-    if (diff < 200)
+    if (diff < TICK_THRESHOLD)
     {
-        int16_t factor = 200 / diff;
-        direction *= (1 << factor);
+        if (++tickCounter > TICK_BASE)
+        {
+            direction *= tickFactor();
+        }
     }
-    SetCounter(GetCounter() + direction);
+    else
+    {
+        tickCounter = 0;
+    }
+    Set(Get() + direction);
     return true;
 }
 
-void EndPoint::setup(uint8_t i, uint8_t c, uint8_t p)
+preset_base EndPoint::tickFactor()
+{
+    preset_base factor = tickCounter - TICK_BASE;
+    return 2 * factor;
+}
+
+void EndPoint::Setup(uint8_t i, uint8_t c, uint8_t p)
 {
     index = i;
     command = c;

@@ -19,13 +19,13 @@ class Menu
 {
 private:
     const char *label;
-    uint8_t length = 0;   //number of nodes allocated
-    uint8_t range = 0;    //number indeces filled by this node
-    uint8_t level = 0;    //menu depth
-    uint8_t limit = 0;    //number of indeces added
-    uint8_t count = 0;    //number of nodes added
-    uint8_t index = 0;    //current node
-    uint8_t sequence = 0; //current index within node
+    uint8_t length = 0;   // number of nodes allocated
+    uint8_t range = 0;    // number indeces filled by this node
+    uint8_t level = 0;    // menu depth
+    uint8_t limit = 0;    // number of indeces added
+    uint8_t count = 0;    // number of nodes added
+    uint8_t index = 0;    // current node
+    uint8_t sequence = 0; // current index within node
 
     EndPoint *endpoint = NULL;
     Menu **nodes = NULL;
@@ -44,8 +44,6 @@ public:
     Menu(const char *label, uint8_t length,
          uint8_t range, EndPoint *point = NULL);
     ~Menu();
-
-    Menu *Add(Menu *item);
 
     static void SetReader(EventReader *);
     static void SetWriter(ResponseWriter *);
@@ -71,19 +69,10 @@ public:
     uint8_t Range() { return range; }
 
     Menu *Selection();
+    Menu *Node(uint8_t n) { return nodes[n]; }
+
+    Menu *Add(Menu *item);
+    Menu *AddExit(EndPoint *point = NULL);
 };
 
 extern Menu rootMenu;
-
-void addExit(Menu *menu);
-void addEndpoints(Menu *menu,
-                  const char *text[], size_t textCount,
-                  EndPoint *endpoint = NULL);
-void addEndpoints(Menu *menu,
-                  const char *text[], size_t textCount,
-                  const char *parms[], size_t parmsCount,
-                  EndPoint *endpoint, EndPoint *editor);
-void addMenus(Menu *menu,
-              const char *text[], size_t textCount,
-              size_t length,
-              EndPoint *endpoint);

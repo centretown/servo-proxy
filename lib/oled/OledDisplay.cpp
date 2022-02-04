@@ -39,7 +39,7 @@ int OledDisplay::process(const char *buf)
 
     char parms[32] = {0};
     unsigned command = 0;
-    int nitems = sscanf(buf + 1, "%u %32s", &command, &parms);
+    int nitems = sscanf(buf + 1, "%u %32s", &command, (char *)parms);
     Serial.println(parms);
     start(command, parms, nitems);
     return ERR_OLED_OK;
@@ -106,7 +106,7 @@ void OledDisplay::drawMenu(const char *heading, const char *label)
 }
 
 void OledDisplay::drawMenu(const char *heading, const char *label,
-                           int16_t value, int16_t max, int16_t min)
+                           preset_base value, preset_base max)
 {
     reset();
     display.setTextColor(SSD1306_WHITE);
@@ -127,15 +127,10 @@ void OledDisplay::drawMenu(const char *heading, const char *label,
 
     int16_t w = display.width();
     int16_t dh = display.height();
-    int16_t h = (value * dh) / (max - min);
+    int16_t h = (value * dh) / max;
     int16_t y = dh - h;
 
     display.drawRect(w - 20, y, 20, h, SSD1306_WHITE);
-
-    // for (int16_t x = w - 20; x < w; x++)
-    // {
-    //     display.drawFastVLine(x, y, h, SSD1306_WHITE);
-    // }
     display.display();
 }
 

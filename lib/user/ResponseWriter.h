@@ -2,14 +2,16 @@
 
 #pragma once
 
-#include <base.h>
+#include "base.h"
+#include "Preset.h"
 
 class ResponseWriter
 {
 public:
     ResponseWriter() {}
-    ~ResponseWriter() {}
+    virtual ~ResponseWriter() {}
 
-    virtual void write(const char *heading, const char *label) {}
-    virtual void write(const char *heading, const char *label, int16_t value) {}
+    virtual void Write(const char *heading, const char *label) = 0;
+    virtual void Write(const char *heading, const char *label,
+                       preset_base value, preset_base high) = 0;
 };

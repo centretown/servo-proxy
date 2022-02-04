@@ -2,13 +2,7 @@
 
 #include "LedMenus.h"
 
-const char *LedMenus::ledParmsText[] = {"Red", "Green", "Blue", "Repeat", "Delay"};
-const size_t LedMenus::ledParmsCount = sizeof(ledParmsText) / sizeof(ledParmsText[0]);
-const char *LedMenus::ledSubText[] = {"Solid", "Blink", "Wipe", "Cycle",
-                                      "Rainbow", "Chase", "CycleChase", "Xmas", "Reset"};
-const size_t LedMenus::ledSubLength = sizeof(ledSubText) / sizeof(ledSubText[0]);
-
-LedMenus::LedMenus(LedSegment *segments, size_t segCount)
+LedMenus::LedMenus(LedSegment *segments, size_t segCount) : segments(segments), segCount(segCount)
 {
     endPoint = new LedEndPoint(segments, segCount);
 }
@@ -18,23 +12,33 @@ LedMenus::~LedMenus()
     free(endPoint);
 }
 
-void LedMenus::addLedSubMenu(Menu *menu, size_t segCount)
+void LedMenus::Build(const char *label)
 {
-    // size_t segCount = sizeof(segs) / sizeof(segs[0]);
-    // add 1 for setup, 1 for exit
-    Menu *sub = menu->Add(new Menu("Strip", ledSubLength + 2, segCount));
-    addEndpoints(sub, ledSubText, ledSubLength,
-                 ledParmsText, ledParmsCount,
-                 endPoint, endPoint);
-    addExit(sub);
+    printFree();
+    Menu *ledMenu = rootMenu.Add(new Menu(label, 2));
+    addMenus(ledMenu);
+    ledMenu->AddExit();
+    printFree();
 }
 
-void LedMenus::initLedMenu(size_t segCount)
+void LedMenus::addMenus(Menu *menu)
 {
-    // add item for exit
-    Menu *ledMenu = rootMenu.Add(new Menu("LED Strips", 2));
-    addLedSubMenu(ledMenu, segCount);
-    printFree();
-    addExit(ledMenu);
-    printFree();
+    LedSegment *seg = &segments[0];
+    uint8_t opCount = LedSegment::GetOperationCount();
+    Menu *subMenu = menu->Add(new Menu("Strip", opCount + 1, segCount));
+    for (uint8_t i = 0; i < opCount; i++)
+    {
+        LedOperator op = (LedOperator)i;
+        uint8_t presetCount = LedSegment::GetPresetCount(op);
+        Menu *opMenu = new Menu(LedSegment::Label(op), presetCount + 1, 1, endPoint);
+        subMenu->Add(opMenu);
+        for (uint8_t j = 0; j < presetCount; j++)
+        {
+            Preset *preset = seg->GetPreset(op, j);
+            Menu *item = new Menu(preset->Label(), endPoint);
+            opMenu->Add(item);
+        }
+        opMenu->AddExit(endPoint);
+    }
+    subMenu->AddExit();
 }

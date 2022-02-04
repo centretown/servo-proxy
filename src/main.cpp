@@ -131,7 +131,7 @@ void setup()
 
 #if defined(USE_LEDSTRIP_LIB)
   led.setup();
-  ledMenus.initLedMenu(ledSegmentCount);
+  ledMenus.Build("LED Strips");
   Serial.print(F("led strip setup: "));
   Serial.print(led.numPixels());
   Serial.println(F(" pixels defined."));

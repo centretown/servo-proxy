@@ -9,7 +9,7 @@ Menu *Menu::Root(uint8_t gen) { return stack.Root(gen); }
 EndPoint *Menu::point = NULL;
 uint8_t Menu::state = MENU_NAVIGATE;
 
-Menu rootMenu("", 4);
+Menu rootMenu("rootMenu", 4);
 char Menu::route[ROUTESIZE] = {0};
 
 EventReader *Menu::reader = NULL;
@@ -37,7 +37,7 @@ void Menu::setup()
     {
         Menu *menu = Current();
         Menu *node = menu->Selection();
-        writer->write(menu->Label(), node->Label());
+        writer->Write(menu->Label(), node->Label());
     }
 }
 
@@ -72,10 +72,10 @@ void Menu::loop()
         menu = Current();
         if (point != NULL)
         {
-            if (!point->process(event))
+            if (!point->Process(event))
             {
                 state = MENU_RUN;
-                point->start();
+                point->Start();
             }
         }
     }
@@ -93,23 +93,21 @@ void Menu::loop()
 
     if (state == MENU_NAVIGATE)
     {
-        writer->write(menu->Label(), node->Label());
+        writer->Write(menu->Label(), node->Label());
     }
     else if (state == MENU_RUN)
     {
         point->SetParameter(menu->Index());
-        writer->write(menu->Label(),
-                      node->Label(),
-                      point->GetCounter());
+        writer->Write(menu->Label(), node->Label(),
+                      point->Get(), point->High());
     }
     else if (state == MENU_EDIT)
     {
         char buf[18] = {0};
         snprintf(buf, sizeof(buf), "%s *", node->Label());
         point->SetParameter(menu->Index());
-        writer->write(menu->Label(),
-                      buf,
-                      point->GetCounter());
+        writer->Write(menu->Label(), buf,
+                      point->Get(), point->High());
     }
 }
 
@@ -157,22 +155,15 @@ Menu *Menu::Select()
     if (node->endpoint != NULL)
     {
         state = (state == MENU_NAVIGATE) ? MENU_RUN : MENU_EDIT;
-
-        // node->endpoint(node);
         if (state == MENU_RUN)
         {
             uint8_t parameter = menu->Index();
             uint8_t command = menu->Ancestor(1)->Index();
             uint8_t index = menu->Ancestor(2)->Index();
             SetPoint(node->endpoint);
-            point->setup(index, command, parameter);
-            point->start();
+            point->Setup(index, command, parameter);
+            point->Start();
         }
-        else
-        {
-            //
-        }
-
         if (node->count == 0)
         {
             return menu;
@@ -183,7 +174,7 @@ Menu *Menu::Select()
     {
         stack.Push(node);
     }
-    else //exit
+    else // exit
     {
         state = (state == MENU_EDIT) ? MENU_RUN : MENU_NAVIGATE;
 
@@ -276,4 +267,10 @@ Menu *Menu::Selection()
         } while (++n < length);
     }
     return this;
+}
+
+Menu *Menu::AddExit(EndPoint *point)
+{
+    static const char *menuExit = "<-Back";
+    return Add(new Menu(menuExit, point));
 }

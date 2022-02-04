@@ -2,33 +2,45 @@
 
 #include "LedEndPoint.h"
 
-void LedEndPoint::setup(uint8_t i, uint8_t c, uint8_t p)
+LedEndPoint::LedEndPoint(LedSegment *segments,
+                         size_t segCount) : segments(segments),
+                                            segCount(segCount)
 {
-    EndPoint::setup(i, c, p);
-    if (index < segCount)
-    {
-        seg = &segments[index];
-    }
+    current = &segments[0];
 }
 
-int16_t LedEndPoint::GetCounter()
+void LedEndPoint::SetIndex(uint8_t i)
 {
-    if (parameter < STRIP_PRESET_COUNT)
+    if (i >= segCount)
     {
-        return seg->Presets().Get(parameter);
+        return;
     }
-    return 0;
+    index = i;
+    current = &segments[index];
 }
 
-void LedEndPoint::SetCounter(int16_t c)
+void LedEndPoint::Setup(uint8_t i, uint8_t c, uint8_t p)
 {
-    if (parameter < STRIP_PRESET_COUNT)
-    {
-        seg->Presets().Set(parameter, c);
-    }
+    EndPoint::Setup(i, c, p);
+    current = &segments[index];
 }
 
-void LedEndPoint::start()
+preset_base LedEndPoint::Get()
 {
-    seg->start((LedOperator)command);
+    return preset()->Get();
+}
+
+preset_base LedEndPoint::High()
+{
+    return preset()->High();
+}
+
+void LedEndPoint::Set(preset_base c)
+{
+    preset()->Set(c);
+}
+
+void LedEndPoint::Start()
+{
+    current->Start((LedOperator)command);
 }
