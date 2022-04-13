@@ -2,12 +2,13 @@
 
 #include "EndPoint.h"
 
-bool EndPoint::Process(UserEvent event)
+bool EndPoint::Edit(UserEvent event)
 {
     if (event == USER_SELECT)
     {
-        return false;
+        return true;
     }
+
     preset_base direction = (event == USER_PREVIOUS) ? -1 : 1;
     unsigned long now = millis();
     unsigned long diff = now - last;
@@ -24,7 +25,7 @@ bool EndPoint::Process(UserEvent event)
         tickCounter = 0;
     }
     Set(Get() + direction);
-    return true;
+    return false;
 }
 
 preset_base EndPoint::tickFactor()
@@ -33,9 +34,10 @@ preset_base EndPoint::tickFactor()
     return 2 * factor;
 }
 
-void EndPoint::Setup(uint8_t i, uint8_t c, uint8_t p)
+void EndPoint::Select(uint8_t index, uint8_t value)
 {
-    index = i;
-    command = c;
-    parameter = p;
+    if (index < ENDPOINT_NAV)
+    {
+        state[index] = value;
+    }
 }

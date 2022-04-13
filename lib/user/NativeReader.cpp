@@ -20,7 +20,7 @@ UserEvent NativeReader::GetEvent()
             return USER_SELECT;
         }
     }
-    return USER_NOP;
+    return USER_WAIT;
 }
 
 #endif

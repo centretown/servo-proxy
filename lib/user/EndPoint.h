@@ -5,7 +5,7 @@
 #include "base.h"
 #include "UserEvent.h"
 
-enum TickState
+enum TickState : uint8_t
 {
     TICK_STATE_NORMAL,
     TICK_STATE_ACCELERATE,
@@ -14,21 +14,20 @@ enum TickState
 #define TICK_THRESHOLD 300
 #define TICK_BASE 3
 
-enum EndPointState
+enum EndPointState : uint8_t
 {
-    ENDPOINT_NAVIGATE,
+    ENDPOINT_INDEX,
     ENDPOINT_RUN,
     ENDPOINT_EDIT,
+    ENDPOINT_NAV,
+    ENDPOINT_BACK,
 };
 
 class EndPoint
 {
 protected:
-    uint8_t index = 0;
-    uint8_t command = 0;
-    uint8_t parameter = 0;
+    uint8_t state[3] = {0};
     uint8_t tickCounter = 0;
-    EndPointState state = ENDPOINT_NAVIGATE;
 
 private:
     unsigned long last = 0;
@@ -40,16 +39,9 @@ public:
     }
     virtual ~EndPoint() {}
 
-    virtual void Setup(uint8_t index, uint8_t command, uint8_t parameter);
-    virtual uint8_t GetIndex() { return index; }
-    virtual void SetIndex(uint8_t i) { index = i; }
-    virtual uint8_t GetCommand() { return command; }
-    virtual void SetCommand(uint8_t c) { command = c; }
-    virtual uint8_t GetParameter() { return parameter; }
-    virtual void SetParameter(uint8_t p) { parameter = p; }
-
+    virtual void Select(uint8_t hook, uint8_t value);
     virtual void Start() = 0;
-    virtual bool Process(UserEvent event);
+    virtual bool Edit(UserEvent event);
 
     virtual preset_base Get() = 0;
     virtual preset_base High() = 0;

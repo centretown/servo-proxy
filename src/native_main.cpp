@@ -7,6 +7,7 @@
 #include "NativeReader.h"
 #include "NativeWriter.h"
 #include "LedSegment.h"
+#include "Navigator.h"
 
 #define USE_SERVO_LIB
 #define USE_LEDSTRIP_LIB
@@ -111,18 +112,17 @@ void testPreset()
 
 int main(int argc, char **argv)
 {
+    Navigator *nav = new Navigator(&nativeReader, &nativeWriter);
     ledMenus.Build("LED Strips");
-    Menu::SetReader(&nativeReader);
-    Menu::SetWriter(&nativeWriter);
     displayPresets();
     // return 0;
     testMenu(&rootMenu);
     testPreset();
 
-    Menu::setup();
+    nav->Setup();
     while (true)
     {
-        Menu::loop();
+        nav->Loop();
     }
     return 0;
 }

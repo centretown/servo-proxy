@@ -37,10 +37,7 @@ public:
     }
     ~Stack()
     {
-        if (stack != NULL)
-        {
-            free(stack);
-        }
+        free(stack);
     }
 
     uint8_t StackPtr() { return stackPtr; }

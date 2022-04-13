@@ -14,14 +14,15 @@ private:
     LedSegment *current = NULL;
     Preset *preset()
     {
-        return current->GetPreset((LedOperator)command, parameter);
+        return current->GetPreset((LedOperator)state[ENDPOINT_RUN],
+                                  state[ENDPOINT_RUN]);
     }
 
 public:
     LedEndPoint(LedSegment *segments, size_t segCount);
     ~LedEndPoint() {}
 
-    virtual void Setup(uint8_t index, uint8_t command, uint8_t parameter);
+    // virtual void Setup(uint8_t index, uint8_t command, uint8_t parameter);
     virtual void Start();
     virtual void SetIndex(uint8_t i);
 

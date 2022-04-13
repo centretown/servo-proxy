@@ -170,7 +170,7 @@ void setup()
 #endif
 
   usrTerm.setup(".usr");
-  Menu::setup();
+  Menu::Setup();
 
   Serial1.flush();
   printFree();
@@ -181,7 +181,7 @@ void processBuffer(const char *buf);
 
 void loop()
 {
-  Menu::loop();
+  Menu::Loop();
 
 #if defined(USE_SERVO_LIB)
   servoServe.loop();

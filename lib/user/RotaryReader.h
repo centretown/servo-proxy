@@ -33,7 +33,7 @@ public:
         default:
             break;
         }
-        return USER_NOP;
+        return USER_WAIT;
     }
 };
 

@@ -6,7 +6,7 @@
 #include "LedPresets.h"
 #include "LedWriter.h"
 
-enum LedOperator
+enum LedOperator : uint8_t
 {
     STRIP_SOLID,       // solid light
     STRIP_BLINK,       // blink

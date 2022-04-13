@@ -4,9 +4,9 @@
 
 typedef enum
 {
-    USER_NOP,
-    USER_PREVIOUS,
     USER_NEXT,
+    USER_PREVIOUS,
     USER_SELECT,
+    USER_WAIT,
     USER_OUT_OF_BOUNDS,
 } UserEvent;

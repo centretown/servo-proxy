@@ -15,14 +15,8 @@ void LedEndPoint::SetIndex(uint8_t i)
     {
         return;
     }
-    index = i;
-    current = &segments[index];
-}
-
-void LedEndPoint::Setup(uint8_t i, uint8_t c, uint8_t p)
-{
-    EndPoint::Setup(i, c, p);
-    current = &segments[index];
+    state[ENDPOINT_INDEX] = i;
+    current = &segments[ENDPOINT_INDEX];
 }
 
 preset_base LedEndPoint::Get()
@@ -42,5 +36,5 @@ void LedEndPoint::Set(preset_base c)
 
 void LedEndPoint::Start()
 {
-    current->Start((LedOperator)command);
+    current->Start((LedOperator)state[ENDPOINT_RUN]);
 }

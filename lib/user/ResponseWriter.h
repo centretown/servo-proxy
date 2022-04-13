@@ -13,5 +13,5 @@ public:
 
     virtual void Write(const char *heading, const char *label) = 0;
     virtual void Write(const char *heading, const char *label,
-                       preset_base value, preset_base high) = 0;
+                       preset_base value, preset_base high, bool edit = false) = 0;
 };

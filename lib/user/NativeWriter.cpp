@@ -16,9 +16,13 @@ void NativeWriter::writeMenu()
 }
 
 void NativeWriter::Write(const char *heading, const char *label,
-                         preset_base value, preset_base high)
+                         preset_base value, preset_base high, bool edit = false)
 {
-    printf("%s\n%s: %u:%u\n", heading, label, value, high);
+    static const char *marker = " *";
+    printf("%s\n%s%s: %u:%u\n",
+           heading, label,
+           (edit) ? marker : "",
+           value, high);
     writeMenu();
 }
 #endif
